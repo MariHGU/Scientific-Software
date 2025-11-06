@@ -1,0 +1,11 @@
+2 # number of states
+5 # number of control inputs
+1 0 0.1 1 # A matrix, column-major
+0 0.1 # B matrix
+1 0 # C matrix
+0 1 # initial state x0
+20 -10 4 3 2 # control inputs u
+1 2 3 4 5 # y target
+0.0001 # gamma
+100 # learning rate alfa
+1e-2 # convergence threshold epsilon

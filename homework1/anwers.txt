@@ -1,0 +1,27 @@
+1. Defining N = num_inputs(5 in our case), and n = num_states(2 in our case). Finite differences relies on computeOutput and cost_function. ComputeOutput consists of; 1. xk+1 = Axk + Buk and 2. yk = Cxk. 1: (Axk = n^2 + n(n-1) = 2n^2 - n flops) + (Buk = n) + (Axk + Buk = n). 2: (Cxk = n + n-1). Together the computeOutput results in: 2*n^2 + 3n - 1 flops. Or with N steps: 2N*n^2 + 3N*n - N. 
+cost_function does: (yk - yk_target)^2 = 1 + 1 + 1 = 3, and penalty: ∑uk^2 = 2. This is done N times: cost_function = 5N
+In total finite_differences does: N*(2*computeOutput + 2*cost_function + 2) = N(2*(2N*n^2 + 3N*n - N) + 2*5*N + 2) = 4N^2*n^2 + 6N^2*n + 8N^2 + 2N flops
+For Backpropagation: CT_contripbution: n + 2. lambda_kp1: n => AT*lambda_kp1: n*(2n - 1),  lambda: n, gradient: 3 + 2n - 1= 2n + 2.
+In total for N imputs: N(n+2 + 2n^2 - n + n + 2n + 2) = 2Nn^2 + 3Nn + 4N
+
+2. Passing by value: If you pass tws::vector<> v by value, you create a copy which allocates a brand new vector taking O(n) time and memory. 
+If you pass a tws::vectorview<> v by value, it creates a shallow copy of the original vector, keeping only the metadata and pointers instead of a new object. Changing the v does change the original values.
+
+Passing by reference: If you pass a tws::vector<>& v by reference you do not get a copy, taking no extra time (O(1) for speed and memory). If you add a const in front you get read-only access. And without a const you can modify the vector inplace. 
+If you pass a tws::vectorview<>& v by reference creates no copy of the vector. By adding a const you allow for read only access of the vector, meanwhile no const allows for complete changing acces to the original vector. 
+
+I went for passing a const reference for owning data(const tws::vector<>& v), and returned results.This was to ensure no modifying of critical data, like matricies and initial_states. While allowing for reading the values without needing to allocate memory for a brand new copy.
+
+3. The stack in the memory is where memory is allocated automatically within the start of a function, and that memory is freed when the function returns. This is usually used for small variable that you only need within a certain scope. Examples from my code can be found in my gradient_descent() function. Here i allocate the new variables J_old, count and the new yobject within the stack. These are automatically destroyed after the function has returned.
+
+The heap allocations are more flexible, but slower. While the new y object itself is stored in the stack, the data array is stored in the heap, and needs to be freed manually. 
+
+
+4. I did multiple changes to my code to improve efficiency when it comes to memory usage and speed. The biggest/most important change was using Backpropagation instead of finite_differences in my gradient descent function. As can be seen in question 1, Backpropagation is cheaper by a factor of ≈2N, making it the more efficient choice. 
+
+Another change i made is in backprop_gradient() where i defined lambda_kp1, ATv and lambda_k outside of the for loop. This ensures that memory for these only needs to be allocated 1, instead of every time the loop is restarted. In addition, it is also faster to overwrite and reuse the vectors instead of creating new ones. 
+
+I also made use of swith-case for initMatricies over if-else comparison for each i. This uses O(1) time instead of the O(n) time for n if-else statements. This is due to switch-case allowing for direct accessing of the "case", meanwhile the program will iterate through every comparison in if else until it finds the correct one. 
+
+
+
