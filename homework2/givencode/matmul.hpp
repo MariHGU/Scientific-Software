@@ -117,7 +117,7 @@ inline void matmul_reordered(const matrixview<> A,
 
     for (int k = 0; k < A.num_columns(); ++k) {
         for (int i = 0; i < A.num_rows(); ++i) {
-            t = alpha * A(i, k);
+            auto t = alpha * A(i, k);
             for (int j = 0; j < B.num_columns(); ++j) {
                 C(i, j) += t * B(k, j);
             }
@@ -151,10 +151,10 @@ inline void matmul_blocks(const matrixview<> A,
     for (int kk = 0; kk < A.num_columns(); kk += block_size) {
         for (int ii = 0; ii < A.num_rows(); ii += block_size) {
             for (int jj = 0; jj < B.num_columns(); jj += block_size) {
-                for (int k = kk; k < std::min(kk + block_size, A.num_columns()), ++k) {
-                    for (int i = ii; i < std::min(ii + block_size, A.num_rows()), ++i) {
+                for (int k = kk; k < std::min(kk + block_size, A.num_columns()); ++k) {
+                    for (int i = ii; i < std::min(ii + block_size, A.num_rows()); ++i) {
                         double t = alpha * A(i, k);
-                        for (int j = jj; j < std::min(jj + block_size), ++j) {
+                        for (int j = jj; j < std::min(jj + block_size, B.num_columns()); ++j) {
                             C(i, j) += t * B(k, j);
                         }
                     }
@@ -189,13 +189,13 @@ inline void matmul_blocks_b(const matrixview<> A,
     for (int ii = 0; ii < A.num_rows(); ii += block_size) {
         for (int jj = 0; jj < B.num_columns(); jj += block_size) {
             for (int kk = 0; kk < A.num_columns(); kk += block_size) {
-                for (int i = ii; i < std::min(ii + block_size, A.num_rows()), ++i) {
-                    for (int j = jj; j < std::min(jj + block_size, B.num_columns()), ++j) {
+                for (int i = ii; i < std::min(ii + block_size, A.num_rows()); ++i) {
+                    for (int j = jj; j < std::min(jj + block_size, B.num_columns()); ++j) {
                         double sum = 0.;
-                        for (int k = kk; k < std::min(kk + block_size, A.num_columns()), ++k) {
+                        for (int k = kk; k < std::min(kk + block_size, A.num_columns()); ++k) {
                             sum += A(i, k) * B(k, j);
                         }
-                        C(i, j) += alpa * sum;
+                        C(i, j) += alpha * sum;
                         }
                     }
                 }
@@ -203,6 +203,17 @@ inline void matmul_blocks_b(const matrixview<> A,
         }
     }
 
+
+
+static inline std::tuple<tws::matrixview<>, tws::matrixview<>, tws::matrixview<>, tws::matrixview<>> split(const tws::matrixview<> M){
+    const int col_half = M.num_columns() / 2;
+    const int row_half = M.num_rows() / 2;
+
+    tws::matrixview<> a = M.submatrix(0, row_half, 0, col_half);
+    tws::matrixview<> b = M.submatrix(0, row_half, col_half, M.num_columns());
+    tws::matrixview<> c = M.submatrix(row_half, M.num_rows(), 0, col_half);
+    tws::matrixview<> d = M.submatrix(row_half, M.num_rows(), col_half, M.num_columns());
+    return {a, b, c, d};
 }
 
 inline void matmul_recursive(const matrixview<> A,
@@ -211,7 +222,45 @@ inline void matmul_recursive(const matrixview<> A,
                              const double alpha = 1.,
                              const double beta = 0.)
 {
-    // TODO: implement this function
+    if (A.num_rows() <= 2) {
+        matmul_reordered(A, B, C, alpha, beta);
+        return;
+    }
+    if (beta == 0.) {
+        // Note: we single out beta = 0, because C might be uninitialized and
+        // 0 * Nan = Nan.
+        for (int i = 0; i < A.num_rows(); ++i) {
+            for (int j = 0; j < B.num_columns(); ++j) {
+                C(i, j) = 0.;
+            }
+        }
+    } else {
+        for (int i = 0; i < A.num_rows(); ++i) {
+            for (int j = 0; j < B.num_columns(); ++j) {
+                C(i, j) *= beta;
+            }
+        }
+    }
+
+    // Recursive multiplication until size is small enough
+
+    // c00 = ae+bg, c01 = af + bh, c10 = ce + dg, c11 = cf + dh
+    auto [a, b, c, d] = split(A);
+    auto [e, f, g, h] = split(B);
+    auto [c00, c01, c10, c11] = split(C);
+
+    matmul_recursive(a, e, c00, alpha, beta);
+    matmul_recursive(b, g, c00, alpha, 1.);
+
+    matmul_recursive(a, f, c01, alpha, beta);
+    matmul_recursive(b, h, c01, alpha, 1.);
+
+    matmul_recursive(c, e, c10, alpha, beta);
+    matmul_recursive(d, g, c10, alpha, 1.);
+
+    matmul_recursive(c, f, c11, alpha, beta);
+    matmul_recursive(d, h, c11, alpha, 1.);
+
 }
 
 /**
@@ -228,8 +277,61 @@ inline void matmul_kernel(const matrixview<> A,
                           const double beta = 0.)
 {
     // TODO: implement this function
+    // A = 8*k, B=k*6, C += alpha*AB
+
+    
+    const int k = A.num_columns();
+    const int m = A.num_rows();
+    const int n = B.num_columns();
+
+    
+    for (int i=0; i<m; i+=8){
+        for (int j=0; j<n; j+=6){
+            double C_cop[8][6];
+
+            if (beta == 0.) {
+                // Note: we single out beta = 0, because C might be uninitialized and
+                // 0 * Nan = Nan.
+                for (int r = 0; r < 8; ++r) {
+                    for (int c = 0; c < 6; ++c) {
+                        C_cop[r][c] = 0.;
+                    }
+                }
+            } else {
+                for (int r = 0; r < 8; ++r) {
+                    for (int c = 0; c < 6; ++c) {
+                        C_cop[r][c] = C(r+i, c+j) * beta;
+                    }
+                }
+            }
+            
+            for (int l = 0; l < k; ++l){
+                double a[8];
+                for (int y=0; y < 8; ++y){
+                    a[y] = A(y+i, l);
+                }
+                    
+
+                for (int x = 0; x < 6; ++x){
+                    const double b = B(l, x+j);
+                    for (int m=0; m < 8; ++m){
+                        C_cop[m][x] += alpha*a[m]*b;
+                    }
+                    //C[m][n] += A[m][i]*B[i][n]*alpha
+                    
+                }
+            }
+            for (int r=0; r<8; ++r){
+                for (int c=0; c<6; ++c){
+                    C(r+i, c+j) = C_cop[r][c];
+                }
+            }
+        }
+    }
+
 }
 
+}
   // namespace tws
 
 #endif // matmul_hpp
