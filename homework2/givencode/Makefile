@@ -2,8 +2,8 @@ ifndef MATRIXLIBRARY
 $(error MATRIXLIBRARY is not set, set it using export MATRIXLIBRARY=<path_to_tws_matrix>)
 endif
 
-CXX=g++ -O3 -DNDEBUG -march=native
-CPPFLAGS=-std=c++20
+CXX=g++ 
+CPPFLAGS=-O3 -DNDEBUG -march=native -std=c++20
 BASE_CXXFLAGS := -std=c++20 -I "$(MATRIXLIBRARY)"
 
 HEADERS=matmul.hpp matmul_kernel.hpp
