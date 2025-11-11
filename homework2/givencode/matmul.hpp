@@ -99,29 +99,36 @@ inline void matmul_reordered(const matrixview<> A,
                              const double alpha = 1.,
                              const double beta = 0.)
 {
+    int m = A.num_rows();
+    int n = B.num_columns();
+    int K = A.num_columns();
+
     if (beta == 0.) {
         // Note: we single out beta = 0, because C might be uninitialized and
         // 0 * Nan = Nan.
-        for (int i = 0; i < A.num_rows(); ++i) {
-            for (int j = 0; j < B.num_columns(); ++j) {
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
                 C(i, j) = 0.;
             }
         }
     } else {
-        for (int i = 0; i < A.num_rows(); ++i) {
-            for (int j = 0; j < B.num_columns(); ++j) {
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
                 C(i, j) *= beta;
             }
         }
     }
 
-    for (int k = 0; k < A.num_columns(); ++k) {
-        for (int i = 0; i < A.num_rows(); ++i) {
-            auto t = alpha * A(i, k);
-            for (int j = 0; j < B.num_columns(); ++j) {
-                C(i, j) += t * B(k, j);
+    for (int j = 0; j < n; ++j)
+    {
+        for (int k = 0; k < K; ++k)
+        {
+            auto t = alpha*B(k, j);
+            for (int i=0; i < m; ++i)
+            {
+                C(i, j) += t * A(i, k);
             }
-        }
+        }   
     }
 }
 
@@ -133,29 +140,36 @@ inline void matmul_blocks(const matrixview<> A,
 {
     // Block size 128
     // kb = nb = mb
+
+    int M = A.num_rows();
+    int N = B.num_columns();
+    int K = A.num_columns();
+
     if (beta == 0.) {
-        for (int i = 0; i < A.num_rows(); ++i) {
-            for (int j = 0; j < B.num_columns(); ++j) {
+        for (int i = 0; i < M; ++i) {
+            for (int j = 0; j < N; ++j) {
                 C(i, j) = 0.;
             }
         }
     } else {
-        for (int i = 0; i < A.num_rows(); ++i) {
-            for (int j = 0; j < B.num_columns(); ++j) {
+        for (int i = 0; i < M; ++i) {
+            for (int j = 0; j < N; ++j) {
                 C(i, j) *= beta;
             }
         }
     }
 
     int block_size = 128;
-    for (int kk = 0; kk < A.num_columns(); kk += block_size) {
-        for (int ii = 0; ii < A.num_rows(); ii += block_size) {
-            for (int jj = 0; jj < B.num_columns(); jj += block_size) {
-                for (int k = kk; k < std::min(kk + block_size, A.num_columns()); ++k) {
-                    for (int i = ii; i < std::min(ii + block_size, A.num_rows()); ++i) {
-                        double t = alpha * A(i, k);
-                        for (int j = jj; j < std::min(jj + block_size, B.num_columns()); ++j) {
-                            C(i, j) += t * B(k, j);
+
+    for (int jj = 0; jj < N; jj += block_size) {
+        for (int kk = 0; kk < K; kk += block_size) {
+            for (int ii = 0; ii < M; ii += block_size) {
+
+                for (int j = jj; j < std::min(jj + block_size, N); ++j) {
+                    for (int k = kk; k < std::min(kk + block_size, K); ++k) {
+                        double t = alpha * B(k, j);
+                        for (int i = ii; i < std::min(ii + block_size, M); ++i) {
+                            C(i, j) += t * A(i, k);
                         }
                     }
                 }
@@ -170,29 +184,34 @@ inline void matmul_blocks_b(const matrixview<> A,
                             const double alpha = 1.,
                             const double beta = 0.)
 {
+    int M = A.num_rows();
+    int N = B.num_columns();
+    int K = A.num_columns();
+
+
     if (beta == 0.) {
-        // Note: we single out beta = 0, because C might be uninitialized and
-        // 0 * Nan = Nan.
-        for (int i = 0; i < A.num_rows(); ++i) {
-            for (int j = 0; j < B.num_columns(); ++j) {
+        for (int i = 0; i < M; ++i) {
+            for (int j = 0; j < N; ++j) {
                 C(i, j) = 0.;
             }
         }
     } else {
-        for (int i = 0; i < A.num_rows(); ++i) {
-            for (int j = 0; j < B.num_columns(); ++j) {
+        for (int i = 0; i < M; ++i) {
+            for (int j = 0; j < N; ++j) {
                 C(i, j) *= beta;
             }
         }
     }
     int block_size = 128;
-    for (int ii = 0; ii < A.num_rows(); ii += block_size) {
-        for (int jj = 0; jj < B.num_columns(); jj += block_size) {
-            for (int kk = 0; kk < A.num_columns(); kk += block_size) {
-                for (int i = ii; i < std::min(ii + block_size, A.num_rows()); ++i) {
-                    for (int j = jj; j < std::min(jj + block_size, B.num_columns()); ++j) {
+
+    for (int ii = 0; ii < M; ii += block_size) {
+        for (int jj = 0; jj < N; jj += block_size) {
+            for (int kk = 0; kk < K; kk += block_size) {
+
+                for (int i = ii; i < std::min(ii + block_size, M); ++i) {
+                    for (int j = jj; j < std::min(jj + block_size, N); ++j) {
                         double sum = 0.;
-                        for (int k = kk; k < std::min(kk + block_size, A.num_columns()); ++k) {
+                        for (int k = kk; k < std::min(kk + block_size, K); ++k) {
                             sum += A(i, k) * B(k, j);
                         }
                         C(i, j) += alpha * sum;
@@ -222,24 +241,9 @@ inline void matmul_recursive(const matrixview<> A,
                              const double alpha = 1.,
                              const double beta = 0.)
 {
-    if (A.num_rows() <= 2) {
+    if (A.num_rows() <= 96) {
         matmul_reordered(A, B, C, alpha, beta);
         return;
-    }
-    if (beta == 0.) {
-        // Note: we single out beta = 0, because C might be uninitialized and
-        // 0 * Nan = Nan.
-        for (int i = 0; i < A.num_rows(); ++i) {
-            for (int j = 0; j < B.num_columns(); ++j) {
-                C(i, j) = 0.;
-            }
-        }
-    } else {
-        for (int i = 0; i < A.num_rows(); ++i) {
-            for (int j = 0; j < B.num_columns(); ++j) {
-                C(i, j) *= beta;
-            }
-        }
     }
 
     // Recursive multiplication until size is small enough
@@ -260,7 +264,6 @@ inline void matmul_recursive(const matrixview<> A,
 
     matmul_recursive(c, f, c11, alpha, beta);
     matmul_recursive(d, h, c11, alpha, 1.);
-
 }
 
 /**

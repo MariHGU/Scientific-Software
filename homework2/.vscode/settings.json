@@ -43,6 +43,8 @@
         "unordered_map": "cpp",
         "cstddef": "cpp",
         "new": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "cassert": "cpp",
+        "chrono": "cpp"
     }
 }

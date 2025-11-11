@@ -2,7 +2,7 @@ ifndef MATRIXLIBRARY
 $(error MATRIXLIBRARY is not set, set it using export MATRIXLIBRARY=<path_to_tws_matrix>)
 endif
 
-CXX=g++
+CXX=g++ -O0
 CPPFLAGS=-std=c++20 -Wall -Wextra 
 BASE_CXXFLAGS := -std=c++20 -Wall -Wextra -I "$(MATRIXLIBRARY)"
 
