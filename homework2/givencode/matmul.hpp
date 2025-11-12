@@ -4,6 +4,7 @@
 #include <cassert>
 
 #include "twsmatrix.hpp"
+#include "matmul_kernel.hpp"
 
 namespace tws {
 
@@ -279,59 +280,42 @@ inline void matmul_kernel(const matrixview<> A,
                           const double alpha = 1.,
                           const double beta = 0.)
 {
-    // TODO: implement this function
     // A = 8*k, B=k*6, C += alpha*AB
+    const int M = A.num_rows();
+    const int N = B.num_columns();
+    const int K = A.num_columns(); 
 
-    
-    const int k = A.num_columns();
-    const int m = A.num_rows();
-    const int n = B.num_columns();
+    assert(M % 8 == 0);
+    assert(N % 6 == 0);
+    assert(K > 0);
 
-    
-    for (int i=0; i<m; i+=8){
-        for (int j=0; j<n; j+=6){
-            double C_cop[8][6];
-
-            if (beta == 0.) {
-                // Note: we single out beta = 0, because C might be uninitialized and
-                // 0 * Nan = Nan.
-                for (int r = 0; r < 8; ++r) {
-                    for (int c = 0; c < 6; ++c) {
-                        C_cop[r][c] = 0.;
-                    }
-                }
-            } else {
-                for (int r = 0; r < 8; ++r) {
-                    for (int c = 0; c < 6; ++c) {
-                        C_cop[r][c] = C(r+i, c+j) * beta;
-                    }
-                }
-            }
-            
-            for (int l = 0; l < k; ++l){
-                double a[8];
-                for (int y=0; y < 8; ++y){
-                    a[y] = A(y+i, l);
-                }
-                    
-
-                for (int x = 0; x < 6; ++x){
-                    const double b = B(l, x+j);
-                    for (int m=0; m < 8; ++m){
-                        C_cop[m][x] += alpha*a[m]*b;
-                    }
-                    //C[m][n] += A[m][i]*B[i][n]*alpha
-                    
-                }
-            }
-            for (int r=0; r<8; ++r){
-                for (int c=0; c<6; ++c){
-                    C(r+i, c+j) = C_cop[r][c];
-                }
-            }
+    if (beta != 1.0) {
+        if (beta == 0.0) {
+            for (int j = 0; j < N; ++j)
+                for (int i = 0; i < M; ++i)
+                    C(i, j) = 0.0;
+        } else {
+            for (int j = 0; j < N; ++j)
+                for (int i = 0; i < M; ++i)
+                    C(i, j) *= beta;
         }
     }
 
+    for (int j = 0; j < N; j += 6) {  
+        for (int i = 0; i < M; i += 8) {  
+
+            double* C_block = &C(i, j);
+            int ldc = C.leading_dimension();  // move between columns
+
+            const double* A_block = &A(i, 0);
+            int lda = A.leading_dimension();  // >= M
+
+            const double* B_block = &B(0, j);
+            int ldb = B.leading_dimension();  // >= K
+
+            kernel_8x6(K, alpha, A_block, lda, B_block, ldb, C_block, ldc);
+        }
+    }
 }
 
 }
