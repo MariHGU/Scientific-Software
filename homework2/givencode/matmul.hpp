@@ -305,13 +305,13 @@ inline void matmul_kernel(const matrixview<> A,
         for (int i = 0; i < M; i += 8) {  
 
             double* C_block = &C(i, j);
-            int ldc = C.leading_dimension();  // move between columns
+            int ldc = C.ldim();  // move between columns
 
             const double* A_block = &A(i, 0);
-            int lda = A.leading_dimension();  // >= M
+            int lda = A.ldim();  // >= M
 
             const double* B_block = &B(0, j);
-            int ldb = B.leading_dimension();  // >= K
+            int ldb = B.ldim();  // >= K
 
             kernel_8x6(K, alpha, A_block, lda, B_block, ldb, C_block, ldc);
         }

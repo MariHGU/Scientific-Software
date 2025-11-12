@@ -124,16 +124,35 @@ int main(int argc, char* argv[]) {
 
 
     if (method == "matmul_naive") {
+        auto t0 = std::chrono::steady_clock::now();
         tws::matmul_naive(A, B, C, alpha, beta);
+        auto t1 = std::chrono::steady_clock::now();
+        double diff = std::chrono::duration<double>(t1 - t0).count();
+        std::cout << "bs: " << block_size << ", time: " << diff << std::endl;
+
     }
     else if (method == "matmul_reordered") {
+        auto t0 = std::chrono::steady_clock::now();
         tws::matmul_reordered(A, B, C, alpha, beta);
+        auto t1 = std::chrono::steady_clock::now();
+        double diff = std::chrono::duration<double>(t1 - t0).count();
+        std::cout << "bs: " << block_size << ", time: " << diff << std::endl;
+
     }
     else if (method == "matmul_blocks") {
+        auto t0 = std::chrono::steady_clock::now();
         matmul_blocks(A, B, C, alpha, beta, block_size);
+        auto t1 = std::chrono::steady_clock::now();
+        double diff = std::chrono::duration<double>(t1 - t0).count();
+        std::cout << "bs: " << block_size << ", time: " << diff << std::endl;
+
     }
     else if (method == "matmul_blocks_b") {
+        auto t0 = std::chrono::steady_clock::now();
         matmul_blocks_b(A, B, C, alpha, beta, block_size);
+        auto t1 = std::chrono::steady_clock::now();
+        double diff = std::chrono::duration<double>(t1 - t0).count();
+        std::cout << "bs: " << block_size << ", time: " << diff << std::endl;
     }
     else {
         std::cerr << "Unknown method: " << method << "\n";
