@@ -7,12 +7,12 @@
 #include <string>
 #include <vector>
 
-#include "twsmatrix.hpp"   // your matrix/matrixview
-#include "matmul.hpp"      // declares tws::matmul_* functions
+#include "twsmatrix.hpp"  
+#include "matmul.hpp"  
+#include "matmul_kernel.hpp"    
 
 using namespace tws;
 
-// ---------- equality helper ----------
 template <Matrix M1, Matrix M2>
 bool matrices_equal(const M1& A, const M2& B, double tol = 1e-9,
                     int* bad_i = nullptr, int* bad_j = nullptr,
@@ -47,13 +47,11 @@ int main() {
     randomize(A);
     randomize(B);
 
-    // Keep immutable copies for fairness (some impls may alias/views, etc.)
     const matrix<> A2 = A;
     const matrix<> B2 = B;
 
-    // --- Reference result ---
     matrix<> C_ref(M, N);
-    matmul_naive(A2, B2, C_ref, /*alpha=*/1.0, /*beta=*/0.0);
+    matmul_naive(A2, B2, C_ref, 1.0, 0.0);
 
     // List of implementations to test
     using MM = std::function<void(const matrix<>&, const matrix<>&, matrix<>&, double, double)>;
@@ -75,7 +73,6 @@ int main() {
     for (auto& [name, fn] : tests) {
         matrix<> C(M, N);  // fresh destination
 
-        // time it (optional)
         auto t0 = std::chrono::high_resolution_clock::now();
         fn(A2, B2, C, alpha, beta);
         auto t1 = std::chrono::high_resolution_clock::now();

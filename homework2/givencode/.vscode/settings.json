@@ -1,5 +1,10 @@
 {
     "files.associations": {
-        "cassert": "cpp"
+        "cassert": "cpp",
+        "functional": "cpp",
+        "cstdlib": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "chrono": "cpp"
     }
 }
