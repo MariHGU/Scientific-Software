@@ -111,10 +111,13 @@ void lu_v2(matrixview<T> A, vectorview<int> ipiv)
             }
         }
 
-        for (int i = j + 1; i < m; ++i) {
+        // Straight forward fix: swap i and k (matricies are column-major)
+        for (int i = j + 1; i < m; ++i){
             A(i, j) = A(i, j) / A(j, j);
-            for (int k = j + 1; k < n; ++k) {
-                A(i, k) = A(i, k) - A(i, j) * A(j, k);
+        }
+        for (int k = j + 1; k < n; ++k) {
+            for (int i = j + 1; i < m; ++i) {
+                A(i, k) -= A(i, j) * A(j, k);
             }
         }
     }

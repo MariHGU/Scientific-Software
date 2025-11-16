@@ -42,6 +42,18 @@ template <typename T>
 void trsm_ll_v2(const matrixview<T> L, matrixview<T> B)
 {
     // TODO: implement this function
+    int n = L.num_rows();
+    int m = B.num_columns();
+
+    for (int j = 0; j < m; ++j){
+        for (int i = 0; i < n; ++i){
+            for (int k = 0; k < i; ++k){
+                B(i, j) = B(i,j) - L(i,k)*B(k,j);
+            }
+
+            B(i, j) = B(i,j)/L(i,i);
+        }
+    }
 }
 
 }  // namespace tws
