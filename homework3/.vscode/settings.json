@@ -34,6 +34,10 @@
         "variant": "cpp",
         "vector": "cpp",
         "complex": "cpp",
-        "cassert": "cpp"
+        "cassert": "cpp",
+        "iomanip": "cpp",
+        "iostream": "cpp",
+        "__locale": "cpp",
+        "typeinfo": "cpp"
     }
 }
