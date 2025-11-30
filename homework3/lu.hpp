@@ -2,6 +2,8 @@
 #define lu_hpp
 
 #include <cassert>
+#include <cblas.h>
+#include <type_traits>
 
 #include "matrix.hpp"
 #include "vector.hpp"
@@ -198,21 +200,130 @@ template <typename T>
 void lu_v4(matrixview<T> A, vectorview<int> ipiv)
 {
     // TODO: implement this function
+    // same as v3 but use BLAS where possible
+    static_assert(std::is_same_v<T,float> || std::is_same_v<T, double>, "lu_v4: type not supported for BLAS implementation");
     int min_val = std::min(A.num_rows(), A.num_columns());
     assert(ipiv.size() == min_val);
 
     int m = A.num_rows();
-    int n = A.num_cokumns();
+    int n = A.num_columns();
 
     int nb = 128;
     // iterate through blocks
     for (int i = 0; i < min_val; i+=nb){
+        // find block size
+        int bi = std::min(nb, min_val-i);
 
+        auto A00_10 = A.submatrix(i, m, i, bi+i);
+        auto ipiv_panel = ipiv.subvector(i, bi+i);
+        lu_v2(A00_10, ipiv_panel); // LU factorization of left panel
+
+        // apply pivoting:
+        for (int p = 0; p < bi; ++p){
+            int global_p = p + i;
+            int global_q = i + ipiv_panel[p];
+
+            ipiv[global_p] = global_q;
+
+            if (global_p == global_q){
+                continue;
+            }
+
+            for (int col =bi+i; col<n; ++col){
+                std::swap(A(global_p, col), A(global_q, col));
+            }
+        }
+
+        if (bi + i >=n){ 
+            continue; // no more blocks to factorise => skip
+        }
+
+        auto A01 = A.submatrix(i, m, bi+i, n);
+        auto A10 = A.submatrix(bi+i, m, i, i+bi);
+        auto A11 = A.submatrix(bi+i, m, bi+i,n);
+
+        auto L00 = A.submatrix(i, bi+i, i,bi+i); // top bi x bi of A00
+        auto U01 = A.submatrix(i, bi+i, bi+i, n); // top bi rows of A01
+
+        if constexpr (std::is_same_v<T,double>)
+        {
+            // Use BLAS to solve for U01
+            // L00*U01 = A01
+            cblas_dtrsm(
+                CblasColMajor,
+                CblasLeft,
+                CblasLower, //L00 is lower triangular
+                CblasNoTrans,
+                CblasUnit, // Unit lower triangualer, diagonal is 1
+                U01.num_rows(), // num rows in U01
+                U01.num_columns(), //num columns in U01
+                1.0,
+                &L00(0,0), // pointer to first element of L00
+                L00.ldim(),
+                &U01(0,0),
+                U01.ldim()
+            );
+
+            // A11 <- A11 - L10*U01
+            // dgemm: C = alpha*op(A)*op(B) + beta*C
+            cblas_dgemm(
+                CblasColMajor,
+                CblasNoTrans,
+                CblasNoTrans,
+                A10.num_rows(),
+                U01.num_columns(),
+                U01.num_rows(),
+                -1.0, // alpha
+                &A10(0,0),
+                A10.ldim(),
+                &U01(0,0),
+                U01.ldim(),
+                1.0, // beta
+                &A11(0,0),
+                A11.ldim()
+            );
+        } else if constexpr (std::is_same_v<T,float>)
+        {
+            // Use BLAS to solve for U01
+            // L00*U01 = A01
+            cblas_strsm(
+                CblasColMajor,
+                CblasLeft,
+                CblasLower, //L00 is lower triangular
+                CblasNoTrans,
+                CblasUnit, // Unit lower triangualer, diagonal is 1
+                U01.num_rows(), // num rows in U01
+                U01.num_columns(), //num columns in U01
+                1.0,
+                &L00(0,0), // pointer to first element of L00
+                L00.ldim(),
+                &U01(0,0),
+                U01.ldim()
+            );
+
+            // A11 <- A11 - L10*U01
+            // dgemm: C = alpha*op(A)*op(B) + beta*C
+            cblas_sgemm(
+                CblasColMajor,
+                CblasNoTrans,
+                CblasNoTrans,
+                A10.num_rows(),
+                U01.num_columns(),
+                U01.num_rows(),
+                -1.0, // alpha
+                &A10(0,0),
+                A10.ldim(),
+                &U01(0,0),
+                U01.ldim(),
+                1.0, // beta
+                &A11(0,0),
+                A11.ldim()
+            );
+
+        }
     }
-
-
 }
-
+// sgetrf -> double, dgtrf -> float
 /**
  * See the documentation of the lu function.
  *
@@ -222,6 +333,44 @@ template <typename T>
 void lu_lapack(matrixview<T> A, vectorview<int> ipiv)
 {
     // TODO: implement this function
+    static_assert(std::is_same_v<T,float> || std::is_same_v<T, double>, "lu_lapack: type not supported for LAPACK implementation");
+    
+    int m = A.num_rows();
+    int n = A.num_columns();
+    int lda = A.ldim();
+    int min_val = std::min(m, n);
+    assert(ipiv.size() == min_val);
+
+    int info;
+
+    if constexpr(std::is_same_v<T, float>){
+        info = LAPACKE_sgetrf(
+            LAPACK_COL_MAJOR,
+            m,
+            n,
+            A.data(),
+            lda,
+            ipiv.data()
+        );
+    } else{
+        info = LAPACKE_dgetrf(
+            LAPACK_COL_MAJOR,
+            m,
+            n,
+            A.data(),
+            lda,
+            ipiv.data()
+        );
+    }
+
+    if (info < 0) {
+        throw std::runtime_error("lu_lapack: argument " + std::to_string(-info) + " had an illegal value.");
+    }
+    if (info > 0) {
+        // matrix is singular, U(info,info) = 0
+        // LU is still produced, but rank deficient => rank = 0
+    }
+    
 }
 
 }  // namespace tws

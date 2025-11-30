@@ -38,6 +38,7 @@
         "iomanip": "cpp",
         "iostream": "cpp",
         "__locale": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "cstdlib": "cpp"
     }
 }
