@@ -174,6 +174,8 @@ bool non_square_residual_test(LU lu_func) {
 
 int main(){
     // init matricies
+    int M = 64;
+    int N = 64;
     matrix<double> A_orig(M, N);
     randomize(A_orig);
 
