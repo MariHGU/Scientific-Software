@@ -187,11 +187,11 @@ int main(){
 
     // List of implementations to test
     std::vector<std::pair<std::string, LU>> tests = {
-        {"lu_v1",   [](auto& A, auto& ipiv)},
-        {"lu_v2",   [](auto& A, auto& ipiv)},
-        {"lu_v3",   [](auto& A, auto& ipiv)},
-        {"lu_v4",   [](auto& A, auto& ipiv)},
-        {"lu_lapack",   [](auto& A, auto& ipiv)}
+        {"lu_v1",   [](auto& A, auto& ipiv) { lu_v1(A, ipiv); }},
+        {"lu_v2",   [](auto& A, auto& ipiv) { lu_v2(A, ipiv); }},
+        {"lu_v3",   [](auto& A, auto& ipiv) { lu_v3(A, ipiv); }},
+        {"lu_v4",   [](auto& A, auto& ipiv) { lu_v4(A, ipiv); }},
+        {"lu_lapack",   [](auto& A, auto& ipiv) { lu_lapack(A, ipiv); }}
     };
 
     const double tol = 1e-9;
