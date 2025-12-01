@@ -165,8 +165,7 @@ void lu_v3(matrixview<T> A, vectorview<int> ipiv)
                 continue; // no swap needed
             }
             
-            // Apply swap globally, but only from columns to the right of A00
-            for (int col = bi+i; col < n; ++col){
+            for (int col = 0; col < n; ++col){
                 std::swap(A(global_p, col), A(global_q, col));
             }
 
