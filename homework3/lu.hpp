@@ -228,7 +228,7 @@ void lu_v4(matrixview<T> A, vectorview<int> ipiv)
                 continue;
             }
 
-            for (int col =bi+i; col<n; ++col){
+            for (int col =0; col<n; ++col){
                 std::swap(A(global_p, col), A(global_q, col));
             }
         }
