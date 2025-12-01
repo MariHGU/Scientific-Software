@@ -23,7 +23,8 @@ int main(){
     tws::lu_v1<double>(A, ipiv);
     tws::lu_v2<double>(A, ipiv);
     tws::lu_v3<double>(A, ipiv);
-    //tws::lu_v4<double>(A, ipiv);
+    tws::lu_v4<double>(A, ipiv);
+    tws::lu_lapack<double>(A, ipiv);
     std::cout << "lu factorization ran succesfully" << std::endl;
 
     // Make sure the triangular solves compile and run

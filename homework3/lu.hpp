@@ -369,10 +369,8 @@ void lu_lapack(matrixview<T> A, vectorview<int> ipiv)
     if (info > 0) {
         // matrix is singular, U(info,info) = 0
         // LU is still produced, but rank deficient => rank = 0
-    }
-    
+    }   
 }
-
 }  // namespace tws
 
 #endif

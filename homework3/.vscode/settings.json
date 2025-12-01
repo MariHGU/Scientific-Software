@@ -39,6 +39,7 @@
         "iostream": "cpp",
         "__locale": "cpp",
         "typeinfo": "cpp",
-        "cstdlib": "cpp"
+        "cstdlib": "cpp",
+        "cmath": "cpp"
     }
 }
