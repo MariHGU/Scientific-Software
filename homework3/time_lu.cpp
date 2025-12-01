@@ -100,7 +100,7 @@ int main(int argc, char* argv[]){
         double diff = 0.0;
         for (int i = 0; i < num; ++i){
             tws::matrix<double> A = A0; // copy to ensure every test is run on the same data
-            tws::matrix<int> ipiv(n);
+            tws::vector<int> ipiv(n);
 
             auto t0 = std::chrono::steady_clock::now();
             func(tws::matrixview<double>(A), tws::vectorview<int>(ipiv));
