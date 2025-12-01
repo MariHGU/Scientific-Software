@@ -111,7 +111,7 @@ double frob_norm(const matrix<T>& A){
 }
 
 template <typename T>
-bool lu_residual(const matrix<T>& A_orig, const matrix<T>& A_lu, const vector<int>& ipiv){
+bool lu_residual(const matrix<T>& A_orig, matrix<T>& A_lu, vector<int>& ipiv){
     int m = A_orig.num_rows();
     int n = A_orig.num_columns();
     int minval = std::min(m,n);
@@ -180,7 +180,7 @@ int main(){
     randomize(A_orig);
 
     matrix<double> A_ref = A_orig;
-    vectorview<> ipiv_ref(std::min(M,N));
+    vectorview<int> ipiv_ref(std::min(M,N));
 
     const matrixview<> A = A_ref;
     const vectorview<> ipiv = ipiv_ref;
@@ -189,11 +189,11 @@ int main(){
 
     // List of implementations to test
     std::vector<std::pair<std::string, LU>> tests = {
-        {"lu_v1",   [](auto& A, auto& ipiv) { lu_v1(A, ipiv); }},
-        {"lu_v2",   [](auto& A, auto& ipiv) { lu_v2(A, ipiv); }},
-        {"lu_v3",   [](auto& A, auto& ipiv) { lu_v3(A, ipiv); }},
-        {"lu_v4",   [](auto& A, auto& ipiv) { lu_v4(A, ipiv); }},
-        {"lu_lapack",   [](auto& A, auto& ipiv) { lu_lapack(A, ipiv); }}
+        {"lu_v1",   [](matrixview<double> A, vectorview<int> ipiv) { lu_v1(A, ipiv); }},
+        {"lu_v2",   [](matrixview<double> A, vectorview<int> ipiv) { lu_v2(A, ipiv); }},
+        {"lu_v3",   [](matrixview<double> A, vectorview<int> ipiv) { lu_v3(A, ipiv); }},
+        {"lu_v4",   [](matrixview<double> A, vectorview<int> ipiv) { lu_v4(A, ipiv); }},
+        {"lu_lapack",   [](matrixview<double> A, vectorview<int> ipiv) { lu_lapack(A, ipiv); }}
     };
 
     const double tol = 1e-9;
