@@ -67,7 +67,7 @@ int main(int argc, char* argv[]){
             tws::vector<int> ipiv(n);
 
             auto t0 = std::chrono::steady_clock::now();
-            func(tws::matrixview<double>(A),tws::matrixview<double>(ipiv));
+            func(tws::matrixview<double>(A),tws::vectorview<int>(ipiv));
             auto t1 = std::chrono::steady_clock::now();
 
             diff += std::chrono::duration<double>(t1-t0).count();
