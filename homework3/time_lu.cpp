@@ -6,6 +6,7 @@
 
 #include "twsmatrix.hpp"
 #include "matmul.hpp"
+#include "lu.hpp"
 #include "cmath"
 
 double compute_gflops(double n, double time){
@@ -56,7 +57,7 @@ int main(int argc, char* argv[]){
         for (int i=0; i < 5; ++i){
             tws::matrix<double> A = A0;
             tws::vector<> ipiv(n);
-            func(matrixview<double>(A), vectorview<int>(ipiv));
+            func(tws::matrixview<double>(A), tws::vectorview<int>(ipiv));
         }
 
         int num = 20; 
@@ -66,7 +67,7 @@ int main(int argc, char* argv[]){
             tws::vector<int> ipiv(n);
 
             auto t0 = std::chrono::steady_clock::now();
-            func(matrixview<double>(A),matrixview<double>(ipiv));
+            func(tws::matrixview<double>(A),tws::matrixview<double>(ipiv));
             auto t1 = std::chrono::steady_clock::now();
 
             diff += std::chrono::duration<double>(t1-t0).count();
@@ -74,7 +75,7 @@ int main(int argc, char* argv[]){
         double avg_time = diff/num;
         double gflops = compute_gflops(n, avg_time);
 
-        std:cout << n << " " << avg_time << " " << gflops << std::endl;
+        std::cout << n << " " << avg_time << " " << gflops << std::endl;
         n += 8;
     }
     
@@ -86,7 +87,7 @@ int main(int argc, char* argv[]){
         for (int i=0; i < 3; ++i){
             tws::matrix<double> WU = A0;
             tws::vector<int> ipiv_wu(n);
-            func(matrixview<double>(WU), vectorview<int>(ipiv_wu));
+            func(tws::matrixview<double>(WU), tws::vectorview<int>(ipiv_wu));
         }
         
         if (n<512){
@@ -102,7 +103,7 @@ int main(int argc, char* argv[]){
             tws::matrix<int> ipiv(n);
 
             auto t0 = std::chrono::steady_clock::now();
-            func(matrixview<double>(A), vectorview<int>(ipiv));
+            func(tws::matrixview<double>(A), tws::vectorview<int>(ipiv));
             auto t1 = std::chrono::steady_clock::now();
 
             diff = std::chrono::duration<double>(t1-t0).count();
