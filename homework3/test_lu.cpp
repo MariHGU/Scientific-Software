@@ -118,7 +118,7 @@ bool lu_residual(const matrix<T>& A_orig, matrix<T>& A_lu, vector<int>& ipiv){
 
     // reconstruct L and U from A_lu
     matrix<T> L(m, minval), U(minval, n);
-    extract_LU(A_lu, L, U);
+    extract_LU(matrixview<T>(A_lu), L, U);
 
     // Apply pivoting to A_orig to get P*A_orig
     matrix<T> PA = A_orig;
@@ -180,11 +180,7 @@ int main(){
     randomize(A_orig);
 
     matrix<double> A_ref = A_orig;
-    vectorview<int> ipiv_ref(std::min(M,N));
-
-    const matrixview<double> A = A_ref;
-    const vectorview<int> ipiv = ipiv_ref;
-
+    vector<int> ipiv_ref(std::min(M,N));
     lu_v1(matrixview(A_ref), vectorview(ipiv_ref)); // reference solution
 
     // List of implementations to test
