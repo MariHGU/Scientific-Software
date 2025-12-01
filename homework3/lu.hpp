@@ -171,19 +171,23 @@ void lu_v3(matrixview<T> A, vectorview<int> ipiv)
 
         }
         
-        if(bi + i >= n || bi + i >= m){
+        if(bi + i >= n){
             continue;
         }
         // retrieve pivoted submatricies
         auto A01 = A.submatrix(i, m, bi+i, n);
-        auto A10 = A.submatrix(bi+i, m, i, bi+i); // L10 is in A10
-        auto A11 = A.submatrix(bi+i, m, bi+i, n);
         
         // U01 = L00^-1 * A01
         auto L00 = A.submatrix(i, bi+i, i, bi+i); // L00 is the bi x bi square in A00
         auto U01 = A.submatrix(i, bi+i, i+bi, n); // Top bi rows of A01
         trsm_ll_v2(L00, U01); // Solution stored in U01
         
+        if(bi + i >= m){
+            continue;
+        }
+        
+        auto A10 = A.submatrix(bi+i, m, i, bi+i); // L10 is in A10
+        auto A11 = A.submatrix(bi+i, m, bi+i, n);
         // => A11 <- A11 - L10*U01
         tws::matmul_blocked_a(A10, U01, A11, T(-1), T(1));
     }
