@@ -42,8 +42,8 @@ bool matricies_equal(const M1& A, const M2& B, double tol = 1e-9,
 
 template <typename T>
 void extract_LU(const matrixview<T>& A_lu,
-                tws::matrix<T>& L,
-                tws::matrix<T>& U)
+                matrix<T>& L,
+                matrix<T>& U)
 {
     int m = A_lu.num_rows();
     int n = A_lu.num_columns();
@@ -155,12 +155,12 @@ bool non_square_residual_test(LU lu_func) {
     int k = std::min(m, n);
 
     // Original matrix
-    tws::matrix<double> A0(m, n);
+    matrix<double> A0(m, n);
     randomize(A0);
 
     // Copy to factorize
-    tws::matrix<double> A = A0;
-    tws::vector<int> ipiv(k);
+    matrix<double> A = A0;
+    vector<int> ipiv(k);
 
     // Run LU
     lu_func(matrixview<double>(A), vectorview<int>(ipiv));
@@ -182,8 +182,8 @@ int main(){
     matrix<double> A_ref = A_orig;
     vectorview<int> ipiv_ref(std::min(M,N));
 
-    const matrixview<> A = A_ref;
-    const vectorview<> ipiv = ipiv_ref;
+    const matrixview<double> A = A_ref;
+    const vectorview<int> ipiv = ipiv_ref;
 
     lu_v1(matrixview(A_ref), vectorview(ipiv_ref)); // reference solution
 
