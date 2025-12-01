@@ -8,7 +8,6 @@
 
 #include "twsmatrix.hpp"
 #include "matmul.hpp"
-#include "matmul_kernel.hpp"
 
 using namespace tws;
 
