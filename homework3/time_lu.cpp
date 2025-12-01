@@ -29,14 +29,14 @@ int main(int argc, char* argv[]){
 
     std::unordered_map<std::string,std::function<void(tws::matrixview<double>&, tws::vectorview<int>&)>>
     methods = {
-        {"lu_v1", tws::lu_v1},
-        {"lu_v2", tws::lu_v2},
-        {"lu_v3", tws::lu_v3},
-        {"lu_v4", tws::lu_v4},
-        {"lu_lapack", tws::lu_lapack}
+        {"lu_v1", [](tws::matrixview<double> A, tws::vectorview<int> ipiv){tws::lu_v1(A, ipiv);}},
+        {"lu_v2", [](tws::matrixview<double> A, tws::vectorview<int> ipiv){tws::lu_v2(A, ipiv);}},
+        {"lu_v3", [](tws::matrixview<double> A, tws::vectorview<int> ipiv){tws::lu_v3(A, ipiv);}},
+        {"lu_v4", [](tws::matrixview<double> A, tws::vectorview<int> ipiv){tws::lu_v4(A, ipiv);}},
+        {"lu_lapack", [](tws::matrixview<double> A, tws::vectorview<int> ipiv){tws::lu_lapack(A, ipiv);}}
     };
 
-    auto& func_it = methods.find(method);
+    auto func_it = methods.find(method);
     if (func_it == methods.end()){
         std::cerr << "Error: unknown method " << method << "\n";
         std::exit(1);
