@@ -63,7 +63,7 @@ int main(int argc, char* argv[]){
 
         double diff = 0.0;
         for (int i = 0; i < num; ++i){
-            tws::matrix<double A = A0;
+            tws::matrix<double> A = A0;
             tws::vector<int> ipiv(n);
 
             auto t0 = std::chrono::steady_clock::now();
