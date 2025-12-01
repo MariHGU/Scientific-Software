@@ -242,13 +242,7 @@ void lu_v4(matrixview<T> A, vectorview<int> ipiv)
         }
 
         auto A01 = A.submatrix(i, m, bi+i, n);
-        auto A10 = A.submatrix(bi+i, m, i, i+bi);
-        auto A11 = A.submatrix(bi+i, m, bi+i,n);
 
-
-        if(bi + i >= m){
-            continue;
-        }
 
         auto L00 = A.submatrix(i, bi+i, i,bi+i); // top bi x bi of A00
         auto U01 = A.submatrix(i, bi+i, bi+i, n); // top bi rows of A01
@@ -271,6 +265,13 @@ void lu_v4(matrixview<T> A, vectorview<int> ipiv)
                 &U01(0,0),
                 U01.ldim()
             );
+
+            if(bi+i >=m){
+                continue;
+            }
+
+            auto A10 = A.submatrix(bi+i, m, i, i+bi);
+            auto A11 = A.submatrix(bi+i, m, bi+i,n);
 
             // A11 <- A11 - L10*U01
             // dgemm: C = alpha*op(A)*op(B) + beta*C
@@ -309,6 +310,13 @@ void lu_v4(matrixview<T> A, vectorview<int> ipiv)
                 U01.ldim()
             );
 
+            if(bi+i >=m){
+                continue;
+            }
+
+            auto A10 = A.submatrix(bi+i, m, i, i+bi);
+            auto A11 = A.submatrix(bi+i, m, bi+i,n);
+
             // A11 <- A11 - L10*U01
             // dgemm: C = alpha*op(A)*op(B) + beta*C
             cblas_sgemm(
@@ -346,7 +354,7 @@ extern "C" {
 template <typename T>
 void lu_lapack(matrixview<T> A, vectorview<int> ipiv)
 {
-    // TODO: implement this function
+    // TODO: implement this function 
     static_assert(std::is_same_v<T,float> || std::is_same_v<T, double>, "lu_lapack: type not supported for LAPACK implementation");
     
     int m = A.num_rows();
