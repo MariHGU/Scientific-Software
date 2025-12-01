@@ -228,12 +228,12 @@ void lu_v4(matrixview<T> A, vectorview<int> ipiv)
                 continue;
             }
 
-            for (int col =0; col<n; ++col){
+            for (int col =bi+i; col<n; ++col){
                 std::swap(A(global_p, col), A(global_q, col));
             }
         }
 
-        if (bi + i >=n){ 
+        if (bi + i >=n || bi + i >= m){ 
             continue; // no more blocks to factorise => skip
         }
 
