@@ -7,6 +7,8 @@ CPPFLAGS= -std=c++20 -Wall -Wextra -pedantic
 
 HEADERS=lu.hpp triangular_solve.hpp matmul.hpp
 
+all: run_all_code test_lu time_lu
+
 run_all_code: CPPFLAGS = -std=c++20 -Wall -Wextra -pedantic
 run_all_code: run_all_code.cpp $(HEADERS)
 	$(CXX) $(CPPFLAGS) -o $@ $<  -I"$(MATRIXLIBRARY)" -lblas -llapack

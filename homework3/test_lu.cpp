@@ -110,22 +110,22 @@ double frob_norm(const matrix<T>& A){
 }
 
 template <typename T>
-double lu_residual(const matrix<T>& A_orig, const matrix<T>& A_lu, const vector<int>& ipiv){
+bool lu_residual(const matrix<T>& A_orig, const matrix<T>& A_lu, const vector<int>& ipiv){
     int m = A_orig.num_rows();
     int n = A_orig.num_columns();
     int minval = std::min(m,n);
 
     // reconstruct L and U from A_lu
-    tws::matrix<T> L(m, minval), U(minval, n);
+    matrix<T> L(m, minval), U(minval, n);
     extract_LU(A_lu, L, U);
 
     // Apply pivoting to A_orig to get P*A_orig
-    tws::matrix<T> PA(m, n);
-    apply_pivots(A_orig, ipiv, PA);
+    matrix<T> PA = A_orig;
+    apply_pivots(PA, ipiv);
 
     // Compute residual R = PA - L*
-    tws::matrix<T> LU(m, n);
-    matmul_blocked_a(L, U, LU);
+    matrix<T> LU(m, n);
+    matmul_blocked_a(matrixview(L), matrixview(U), matrixview(LU), T(1.0), T(0.0));
 
     for (int i=0; i < m; ++i){
         for (int j = 0; j < n; ++j)
@@ -172,7 +172,7 @@ bool non_square_residual_test(LU lu_func) {
 
 int main(){
     // init matricies
-    const matrix<double> A_orig(M, N);
+    matrix<double> A_orig(M, N);
     randomize(A_orig);
 
     matrix<double> A_ref = A_orig;
@@ -184,7 +184,7 @@ int main(){
     lu_v1(matrixview(A_ref), vectorview(ipiv_ref)); // reference solution
 
     // List of implementations to test
-    using LU = std::function<void(matrixview<>&, vectorview<>&);
+    using LU = std::function<void(matrixview<double>, vectorview<int>)>;
     std::vector<std::pair<std::string, LU>> tests = {
         {"lu_v1",   [](auto& A, auto& ipiv)},
         {"lu_v2",   [](auto& A, auto& ipiv)},
@@ -208,7 +208,7 @@ int main(){
         int bi = -1, bj = -1; double va = 0, vb = 0;
         bool pass_1 = matricies_equal(A, A_ref, tol, &bi, &bj, &va, &vb);
 
-        std::cout << std::left << std::setw << name
+        std::cout << std::left << std::setw(12) << name
                  << (pass_1 ? " : PASS " : " : FAIL ")
                  << " | time = " << std::setw(8) << time << "s";
         if(!pass_1){
@@ -221,7 +221,7 @@ int main(){
         bool pass_2 = lu_residual(A_orig, A, ipiv);
         std::cout << "Test residual: " << (pass_2 ? "PASS" : "FAIL") << "\n";
 
-        bool pass_3 = non_square_resiudal_test(fn);
+        bool pass_3 = non_square_residual_test(fn);
         std::cout << "Test non-square: " << (pass_3 ? "PASS" : "FAIL") << "\n";
 
 
