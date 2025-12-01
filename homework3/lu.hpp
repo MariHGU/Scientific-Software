@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <cblas.h>
+#include <lapacke.h>
 #include <type_traits>
 
 #include "matrix.hpp"
