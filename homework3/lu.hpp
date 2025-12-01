@@ -3,7 +3,6 @@
 
 #include <cassert>
 #include <cblas.h>
-#include <lapacke.h>
 #include <type_traits>
 
 #include "matrix.hpp"
@@ -324,6 +323,12 @@ void lu_v4(matrixview<T> A, vectorview<int> ipiv)
     }
 }
 // sgetrf -> double, dgtrf -> float
+
+extern "C" {
+    void dgetrf_(const int* m, const int* n, double* a, const int* lda, int* ipiv, int* info);
+    void sgetrf_(const int* m, const int* n, float* a, const int* lda, int* ipiv, int* info);
+}
+
 /**
  * See the documentation of the lu function.
  *
@@ -344,22 +349,22 @@ void lu_lapack(matrixview<T> A, vectorview<int> ipiv)
     int info;
 
     if constexpr(std::is_same_v<T, float>){
-        info = LAPACKE_sgetrf(
-            LAPACK_COL_MAJOR,
-            m,
-            n,
+        sgetrf_(
+            &m,
+            &n,
             A.data(),
-            lda,
-            ipiv.data()
+            &lda,
+            ipiv.data(),
+            &info
         );
     } else{
-        info = LAPACKE_dgetrf(
-            LAPACK_COL_MAJOR,
-            m,
-            n,
+        dgetrf_(
+            &m,
+            &n,
             A.data(),
-            lda,
-            ipiv.data()
+            &lda,
+            ipiv.data(),
+            &info
         );
     }
 
@@ -369,7 +374,11 @@ void lu_lapack(matrixview<T> A, vectorview<int> ipiv)
     if (info > 0) {
         // matrix is singular, U(info,info) = 0
         // LU is still produced, but rank deficient => rank = 0
-    }   
+    } 
+    
+    for (int i = 0; i < min_val; ++i){
+        ipiv[i] -= 1;
+    }
 }
 }  // namespace tws
 
