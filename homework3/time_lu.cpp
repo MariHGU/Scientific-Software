@@ -47,6 +47,7 @@ int main(int argc, char* argv[]){
     std::cout << "n  time  gflops" << std::endl;
 
     int n=8;
+    int num = 20; 
     while (n < 128){
 
         tws::matrix<> A0(n,n);
@@ -60,7 +61,6 @@ int main(int argc, char* argv[]){
             func(tws::matrixview<double>(A), tws::vectorview<int>(ipiv));
         }
 
-        int num = 20; 
         double diff = 0.0;
         for (int i = 0; i < num; ++i){
             tws::matrix<double A = A0;
