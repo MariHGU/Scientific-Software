@@ -8,6 +8,7 @@
 
 #include "twsmatrix.hpp"
 #include "matmul.hpp"
+#include "lu.hpp"
 
 using namespace tws;
 
@@ -127,8 +128,8 @@ bool lu_residual(const matrix<T>& A_orig, const matrix<T>& A_lu, const vector<in
     matrix<T> LU(m, n);
     matmul_blocked_a(matrixview(L), matrixview(U), matrixview(LU), T(1.0), T(0.0));
 
-    for (int i=0; i < m; ++i){
-        for (int j = 0; j < n; ++j)
+    for (int j = 0; j < n; ++j){
+        for (int i=0; i < m; ++i)
         {
             LU(i, j) = PA(i, j) - LU(i, j);
         }
@@ -146,6 +147,7 @@ bool lu_residual(const matrix<T>& A_orig, const matrix<T>& A_lu, const vector<in
 // test wrong 
 // check if reconstructed A is close to original A
 // zero-size cases
+using LU = std::function<void(matrixview<double>, vectorview<int>)>;
 
 bool non_square_residual_test(LU lu_func) {
     int m = 5;
@@ -163,8 +165,8 @@ bool non_square_residual_test(LU lu_func) {
     // Run LU
     lu_func(matrixview<double>(A), vectorview<int>(ipiv));
 
-    // Compute relative residual ||P A0 - L U|| / ||A0||
-    bool rel_res = lu_residual(A0, A, ipiv); // using the helper we discussed
+    // Compute and test relative residual ||P A0 - L U|| / ||A0||
+    bool rel_res = lu_residual(A0, A, ipiv);
 
     return rel_res;
 }
@@ -184,7 +186,6 @@ int main(){
     lu_v1(matrixview(A_ref), vectorview(ipiv_ref)); // reference solution
 
     // List of implementations to test
-    using LU = std::function<void(matrixview<double>, vectorview<int>)>;
     std::vector<std::pair<std::string, LU>> tests = {
         {"lu_v1",   [](auto& A, auto& ipiv)},
         {"lu_v2",   [](auto& A, auto& ipiv)},
