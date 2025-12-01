@@ -237,13 +237,18 @@ void lu_v4(matrixview<T> A, vectorview<int> ipiv)
             }
         }
 
-        if (bi + i >=n || bi + i >= m){ 
+        if (bi + i >=n){ 
             continue; // no more blocks to factorise => skip
         }
 
         auto A01 = A.submatrix(i, m, bi+i, n);
         auto A10 = A.submatrix(bi+i, m, i, i+bi);
         auto A11 = A.submatrix(bi+i, m, bi+i,n);
+
+
+        if(bi + i >= m){
+            continue;
+        }
 
         auto L00 = A.submatrix(i, bi+i, i,bi+i); // top bi x bi of A00
         auto U01 = A.submatrix(i, bi+i, bi+i, n); // top bi rows of A01
