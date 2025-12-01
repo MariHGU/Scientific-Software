@@ -27,7 +27,7 @@ int main(int argc, char* argv[]){
 
     std::string method = argv[1];
 
-    std::unordered_map<std::string,std::function<void(tws::matrixview<double>&, tws::vectorview<int>&)>>
+    std::unordered_map<std::string,std::function<void(tws::matrixview<double>, tws::vectorview<int>)>>
     methods = {
         {"lu_v1", [](tws::matrixview<double> A, tws::vectorview<int> ipiv){tws::lu_v1(A, ipiv);}},
         {"lu_v2", [](tws::matrixview<double> A, tws::vectorview<int> ipiv){tws::lu_v2(A, ipiv);}},
