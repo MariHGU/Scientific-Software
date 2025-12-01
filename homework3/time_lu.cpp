@@ -91,10 +91,10 @@ int main(int argc, char* argv[]){
         }
         
         if (n<512){
-            num = 10;
+            num = 15;
         }
         else {
-            num = 5;
+            num = 10;
         }
         
         double diff = 0.0;
@@ -113,6 +113,7 @@ int main(int argc, char* argv[]){
         double diff_avg = diff / num;
         double gflops = compute_gflops(n, diff_avg);
 
+        std::cout << n << " " << avg_time << " " << gflops << std::endl;
         n += 128;
     }
 }
