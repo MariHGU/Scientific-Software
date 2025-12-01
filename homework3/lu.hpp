@@ -165,13 +165,13 @@ void lu_v3(matrixview<T> A, vectorview<int> ipiv)
                 continue; // no swap needed
             }
             
-            for (int col = 0; col < n; ++col){
+            for (int col = bi+i; col < n; ++col){
                 std::swap(A(global_p, col), A(global_q, col));
             }
 
         }
         
-        if(bi + i >= n){
+        if(bi + i >= n || bi + i >= m){
             continue;
         }
         // retrieve pivoted submatricies
