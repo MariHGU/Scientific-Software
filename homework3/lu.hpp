@@ -180,7 +180,7 @@ void lu_v3(matrixview<T> A, vectorview<int> ipiv)
         
         // U01 = L00^-1 * A01
         auto L00 = A.submatrix(i, bi_i, i, bi_i); // L00 is the bi x bi square in A00
-        auto U01 = A.submatrix(i, bi_i, i_bi, n); // Top bi rows of A01
+        auto U01 = A.submatrix(i, bi_i, bi_i, n); // Top bi rows of A01
         trsm_ll_v2(L00, U01); // Solution stored in U01
         
         if(bi_i >= m){
@@ -273,7 +273,7 @@ void lu_v4(matrixview<T> A, vectorview<int> ipiv)
                 continue;
             }
 
-            auto A10 = A.submatrix(bi_i, m, i, i_bi);
+            auto A10 = A.submatrix(bi_i, m, i, bi_i);
             auto A11 = A.submatrix(bi_i, m, bi_i,n);
 
             // A11 <- A11 - L10*U01
@@ -317,7 +317,7 @@ void lu_v4(matrixview<T> A, vectorview<int> ipiv)
                 continue;
             }
 
-            auto A10 = A.submatrix(bi_i, m, i, i_bi);
+            auto A10 = A.submatrix(bi_i, m, i, bi_i);
             auto A11 = A.submatrix(bi_i, m, bi_i,n);
 
             // A11 <- A11 - L10*U01
