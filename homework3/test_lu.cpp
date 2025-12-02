@@ -278,7 +278,7 @@ int main(){
         int bi = -1, bj = -1; double va = 0, vb = 0;
         bool pass_1 = matricies_equal(A, A_ref, tol, &bi, &bj, &va, &vb);
 
-        std::cout << std::left << std::setw(12) << name
+        std::cout  << name <<": Equality test"
                  << (pass_1 ? " : PASS " : " : FAIL ")
                  << " | time = " << std::setw(8) << time << "s";
         if(!pass_1){
