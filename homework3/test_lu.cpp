@@ -150,6 +150,7 @@ bool lu_residual(const matrix<T>& A_orig, matrix<T>& A_lu, vector<int>& ipiv){
 // check if reconstructed A is close to original A
 // zero-size cases
 using LU = std::function<void(matrixview<double>, vectorview<int>)>;
+using FLU = std::function<void(matrixview<float>, vectorview<int>)>;
 
 bool non_square_residual_test(LU lu_func) {
     int m = 5;
@@ -215,7 +216,7 @@ bool zero_size_test(LU lu_func){
     return !error_thrown; // no error thrown
 }
 
-bool test_float_handling(LU lu_func){
+bool test_float_handling(FLU lu_func){
     int m = 5;
     int n = 5;
     matrix<float> A(m,n);
