@@ -376,6 +376,10 @@ void lu_lapack(matrixview<T> A, vectorview<int> ipiv)
     int m = A.num_rows();
     int n = A.num_columns();
     int lda = A.ldim();
+
+    if(m == 0 || n == 0){
+        return;
+    }
     int min_val = std::min(m, n);
     if (ipiv.size() != min_val) {
         throw std::invalid_argument("ipiv size mismatch"); // for testing purposes, not possible to catch assertions
