@@ -47,7 +47,7 @@ int main(int argc, char* argv[]){
     std::cout << "n  time  gflops" << std::endl;
 
     int n=8;
-    int num = 20; 
+    int num = 40; 
     while (n < 128){
 
         tws::matrix<> A0(n,n);
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]){
         
         
         // Warm-up
-        for (int i=0; i < 5; ++i){
+        for (int i=0; i < 10; ++i){
             tws::matrix<double> A = A0;
             tws::vector<> ipiv(n);
             func(tws::matrixview<double>(A), tws::vectorview<int>(ipiv));
@@ -79,22 +79,22 @@ int main(int argc, char* argv[]){
         n += 8;
     }
     
-    while (n < 2048){
+    while (n < 2049){
         tws::matrix<> A0(n,n);
         randomize(A0);
 
         // Warm-up
-        for (int i=0; i < 3; ++i){
+        for (int i=0; i < 10; ++i){
             tws::matrix<double> WU = A0;
             tws::vector<int> ipiv_wu(n);
             func(tws::matrixview<double>(WU), tws::vectorview<int>(ipiv_wu));
         }
         
         if (n<512){
-            num = 15;
+            num = 40;
         }
         else {
-            num = 10;
+            num = 30;
         }
         
         double diff = 0.0;

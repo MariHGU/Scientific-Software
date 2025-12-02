@@ -146,12 +146,12 @@ void lu_v3(matrixview<T> A, vectorview<int> ipiv)
     for (int i =0; i < min_val; i += nb){
         //find width:
         int bi = std::min(nb, min_val - i);
+        int bi_i = bi + i;
 
         // .submatrix(start row, end row, start col, end col)
-        auto A00_10 = A.submatrix(i, m, i, bi+i);
-        auto ipiv_panel = ipiv.subvector(i, bi+i);
+        auto A00_10 = A.submatrix(i, m, i, bi_i);
+        auto ipiv_panel = ipiv.subvector(i, bi_i);
         lu_v2(A00_10, ipiv_panel); // -> Now A00 = L00 and U00 and A10 = L10 and U10
-
         
         // apply pivoting:
         //pivot index runs from 0 to bi-1
@@ -165,29 +165,29 @@ void lu_v3(matrixview<T> A, vectorview<int> ipiv)
                 continue; // no swap needed
             }
             
-            for (int col = bi+i; col < n; ++col){
+            for (int col = bi_i; col < n; ++col){
                 std::swap(A(global_p, col), A(global_q, col));
             }
 
         }
         
-        if(bi + i >= n){
+        if(bi_i >= n){
             continue;
         }
         // retrieve pivoted submatricies
-        auto A01 = A.submatrix(i, m, bi+i, n);
+        auto A01 = A.submatrix(i, m, bi_i, n);
         
         // U01 = L00^-1 * A01
-        auto L00 = A.submatrix(i, bi+i, i, bi+i); // L00 is the bi x bi square in A00
-        auto U01 = A.submatrix(i, bi+i, i+bi, n); // Top bi rows of A01
+        auto L00 = A.submatrix(i, bi_i, i, bi_i); // L00 is the bi x bi square in A00
+        auto U01 = A.submatrix(i, bi_i, i_bi, n); // Top bi rows of A01
         trsm_ll_v2(L00, U01); // Solution stored in U01
         
-        if(bi + i >= m){
+        if(bi_i >= m){
             continue;
         }
         
-        auto A10 = A.submatrix(bi+i, m, i, bi+i); // L10 is in A10
-        auto A11 = A.submatrix(bi+i, m, bi+i, n);
+        auto A10 = A.submatrix(bi_i, m, i, bi_i); // L10 is in A10
+        auto A11 = A.submatrix(bi_i, m, bi_i, n);
         // => A11 <- A11 - L10*U01
         tws::matmul_blocked_a(A10, U01, A11, T(-1), T(1));
     }
@@ -216,9 +216,10 @@ void lu_v4(matrixview<T> A, vectorview<int> ipiv)
     for (int i = 0; i < min_val; i+=nb){
         // find block size
         int bi = std::min(nb, min_val-i);
+        int bi_i = bi + i;
 
-        auto A00_10 = A.submatrix(i, m, i, bi+i);
-        auto ipiv_panel = ipiv.subvector(i, bi+i);
+        auto A00_10 = A.submatrix(i, m, i, bi_i);
+        auto ipiv_panel = ipiv.subvector(i, bi_i);
         lu_v2(A00_10, ipiv_panel); // LU factorization of left panel
 
         // apply pivoting:
@@ -232,20 +233,20 @@ void lu_v4(matrixview<T> A, vectorview<int> ipiv)
                 continue;
             }
 
-            for (int col =bi+i; col<n; ++col){
+            for (int col =bi_i; col<n; ++col){
                 std::swap(A(global_p, col), A(global_q, col));
             }
         }
 
-        if (bi + i >=n){ 
+        if (bi_i >=n){ 
             continue; // no more blocks to factorise => skip
         }
 
-        auto A01 = A.submatrix(i, m, bi+i, n);
+        auto A01 = A.submatrix(i, m, bi_i, n);
 
 
-        auto L00 = A.submatrix(i, bi+i, i,bi+i); // top bi x bi of A00
-        auto U01 = A.submatrix(i, bi+i, bi+i, n); // top bi rows of A01
+        auto L00 = A.submatrix(i, bi_i, i,bi_i); // top bi x bi of A00
+        auto U01 = A.submatrix(i, bi_i, bi_i, n); // top bi rows of A01
 
         if constexpr (std::is_same_v<T,double>)
         {
@@ -266,12 +267,12 @@ void lu_v4(matrixview<T> A, vectorview<int> ipiv)
                 U01.ldim()
             );
 
-            if(bi+i >=m){
+            if(bi_i >=m){
                 continue;
             }
 
-            auto A10 = A.submatrix(bi+i, m, i, i+bi);
-            auto A11 = A.submatrix(bi+i, m, bi+i,n);
+            auto A10 = A.submatrix(bi_i, m, i, i_bi);
+            auto A11 = A.submatrix(bi_i, m, bi_i,n);
 
             // A11 <- A11 - L10*U01
             // dgemm: C = alpha*op(A)*op(B) + beta*C
@@ -310,15 +311,15 @@ void lu_v4(matrixview<T> A, vectorview<int> ipiv)
                 U01.ldim()
             );
 
-            if(bi+i >=m){
+            if(bi_i >=m){
                 continue;
             }
 
-            auto A10 = A.submatrix(bi+i, m, i, i+bi);
-            auto A11 = A.submatrix(bi+i, m, bi+i,n);
+            auto A10 = A.submatrix(bi_i, m, i, i_bi);
+            auto A11 = A.submatrix(bi_i, m, bi_i,n);
 
             // A11 <- A11 - L10*U01
-            // dgemm: C = alpha*op(A)*op(B) + beta*C
+            // sgemm: C = alpha*op(A)*op(B) + beta*C
             cblas_sgemm(
                 CblasColMajor,
                 CblasNoTrans,
@@ -339,7 +340,7 @@ void lu_v4(matrixview<T> A, vectorview<int> ipiv)
         }
     }
 }
-// sgetrf -> double, dgtrf -> float
+// sgetrf -> float, dgtrf -> double
 
 extern "C" {
     void dgetrf_(const int* m, const int* n, double* a, const int* lda, int* ipiv, int* info);

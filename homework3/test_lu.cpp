@@ -116,6 +116,8 @@ bool lu_residual(const matrix<T>& A_orig, matrix<T>& A_lu, vector<int>& ipiv){
     int n = A_orig.num_columns();
     int minval = std::min(m,n);
 
+    double tol = std::is_same_v<T, float> ? 1e-5 : 1e-12; // float has at most 1e-7 precision, and double 1e-15
+
     // reconstruct L and U from A_lu
     matrix<T> L(m, minval), U(minval, n);
     extract_LU(matrixview<T>(A_lu), L, U);
@@ -139,7 +141,7 @@ bool lu_residual(const matrix<T>& A_orig, matrix<T>& A_lu, vector<int>& ipiv){
     double norm_PA = frob_norm(PA);
     double norm_R = frob_norm(LU);
 
-    return norm_R / norm_PA < 1e-10;
+    return norm_R / norm_PA < tol;
 }    
 
 // implement further tests??
@@ -169,6 +171,74 @@ bool non_square_residual_test(LU lu_func) {
     bool rel_res = lu_residual(A0, A, ipiv);
 
     return rel_res;
+}
+
+bool test_wrong_size_handling(LU lu_func){
+    // test too small ipiv:
+    int m = 5;
+    int n = 5;
+    matrix<double> A(m, n);
+    randomize(A);
+    vector<int> ipiv(3); // should be min(m,n)=5
+
+    bool error_thrown = false;
+
+    try{
+        lu_func(matrixview<double>(A), vectorview<int>(ipiv));
+    } catch (const std::exception& e){
+        error_thrown = true; // correctly threw error
+    }
+
+    // test too large ipiv:
+    vector<int> ipiv(10);
+    try{
+        lu_func(matrixview<double>(A), vectorview<int>(ipiv));
+    } catch (const std::exception& e){
+        error_thrown = true; // correctly threw error
+    }
+    return error_thrown; // no error thrown
+}
+
+bool zero_size_test(LU lu_func){
+    // test zero size matrix
+    matrix<double> A(0,0);
+    vector<int> ipiv(0);
+
+    bool error_thrown = false;
+
+    try{
+        lu_func(matrixview<double>(A), vectorview<int>(ipiv));
+    } catch (const std::exception& e){
+        error_thrown = true; // should not throw error
+    }
+
+    return !error_thrown; // no error thrown
+}
+
+bool test_float_handling(LU lu_func){
+    int m = 5;
+    int n = 5;
+    matrix<float> A(m,n);
+    randomize(A);
+    matrix<float> A_orig = A;
+    vector<int> ipiv(std::min(m,n));
+
+    bool error_thrown = false;
+    try
+    {
+        lu_func(matrixview<float>(A), vectorview<int>(ipiv));
+    }
+    catch(const std::exception& e)
+    {
+        error_thrown = true; // should not throw error
+    }
+
+    if (!error_thrown){
+        // compute residual
+        bool rel_res = lu_residual(A_orig, A, ipiv);
+        return rel_res;
+    }
+    return false;   
 }
 
 
@@ -223,7 +293,14 @@ int main(){
         bool pass_3 = non_square_residual_test(fn);
         std::cout << "Test non-square: " << (pass_3 ? "PASS" : "FAIL") << "\n";
 
+        bool pass_4 = test_wrong_size_handling(fn);
+        std::cout << "Test wrong size handling: " << (pass_4 ? "PASS" : "FAIL") << "\n";
 
+        bool pass_5 = zero_size_test(fn);
+        std::cout << "Test zero size: " << (pass_5 ? "PASS" : "FAIL") << "\n";
+
+        bool pass_6 = test_float_handling(fn);
+        std::cout << "Test float handling: " << (pass_6 ? "PASS" : "FAIL") << "\n";
     }
     return 0;
 }
