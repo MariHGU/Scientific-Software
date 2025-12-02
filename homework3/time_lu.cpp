@@ -10,7 +10,7 @@
 #include "cmath"
 
 double compute_gflops(double n, double time){
-    return (2.0 * n * n * n)/(time * 1e9);
+    return ((2.0/3.0) * n * n * n)/(time * 1e9);
 }
 
 int main(int argc, char* argv[]){
@@ -106,7 +106,7 @@ int main(int argc, char* argv[]){
             func(tws::matrixview<double>(A), tws::vectorview<int>(ipiv));
             auto t1 = std::chrono::steady_clock::now();
 
-            diff = std::chrono::duration<double>(t1-t0).count();
+            diff += std::chrono::duration<double>(t1-t0).count();
         }
 
 
