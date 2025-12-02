@@ -190,9 +190,9 @@ bool test_wrong_size_handling(LU lu_func){
     }
 
     // test too large ipiv:
-    vector<int> ipiv(10);
+    vector<int> ipiv_large(10);
     try{
-        lu_func(matrixview<double>(A), vectorview<int>(ipiv));
+        lu_func(matrixview<double>(A), vectorview<int>(ipiv_large));
     } catch (const std::exception& e){
         error_thrown = true; // correctly threw error
     }
@@ -299,7 +299,38 @@ int main(){
         bool pass_5 = zero_size_test(fn);
         std::cout << "Test zero size: " << (pass_5 ? "PASS" : "FAIL") << "\n";
 
-        bool pass_6 = test_float_handling(fn);
+        bool pass_6 = false;
+        if (name == "lu_v1") {
+            pass_6 = test_float_handling(
+                [](matrixview<float> A_f, vectorview<int> ipiv_f) {
+                    lu_v1(A_f, ipiv_f); // instantiates lu_v1<float>
+                }
+            );
+        } else if (name == "lu_v2") {
+            pass_6 = test_float_handling(
+                [](matrixview<float> A_f, vectorview<int> ipiv_f) {
+                    lu_v2(A_f, ipiv_f);
+                }
+            );
+        } else if (name == "lu_v3") {
+            pass_6 = test_float_handling(
+                [](matrixview<float> A_f, vectorview<int> ipiv_f) {
+                    lu_v3(A_f, ipiv_f);
+                }
+            );
+        } else if (name == "lu_v4") {
+            pass_6 = test_float_handling(
+                [](matrixview<float> A_f, vectorview<int> ipiv_f) {
+                    lu_v4(A_f, ipiv_f);
+                }
+            );
+        } else if (name == "lu_lapack") {
+            pass_6 = test_float_handling(
+                [](matrixview<float> A_f, vectorview<int> ipiv_f) {
+                    lu_lapack(A_f, ipiv_f);
+                }
+            );
+        }
         std::cout << "Test float handling: " << (pass_6 ? "PASS" : "FAIL") << "\n";
     }
     return 0;
