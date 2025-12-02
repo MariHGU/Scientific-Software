@@ -55,6 +55,7 @@ namespace tws {
 template <typename T>
 void lu_v1(matrixview<T> A, vectorview<int> ipiv)
 {
+    int min_val = std::min(A.num_rows(), A.num_columns());
     if (ipiv.size() != min_val) {
         throw std::invalid_argument("ipiv size mismatch"); // for testing purposes, not possible to catch assertions
     }
@@ -98,6 +99,7 @@ void lu_v1(matrixview<T> A, vectorview<int> ipiv)
 template <typename T>
 void lu_v2(matrixview<T> A, vectorview<int> ipiv)
 {
+    int min_val = std::min(A.num_rows(), A.num_columns());
     if (ipiv.size() != min_val) {
         throw std::invalid_argument("ipiv size mismatch"); // for testing purposes, not possible to catch assertions
     }
