@@ -55,6 +55,10 @@ namespace tws {
 template <typename T>
 void lu_v1(matrixview<T> A, vectorview<int> ipiv)
 {
+    if (ipiv.size() != min_val) {
+        throw std::invalid_argument("ipiv size mismatch"); // for testing purposes, not possible to catch assertions
+    }
+
     assert(ipiv.size() == std::min(A.num_rows(), A.num_columns()));
 
     int m = A.num_rows();
@@ -94,6 +98,9 @@ void lu_v1(matrixview<T> A, vectorview<int> ipiv)
 template <typename T>
 void lu_v2(matrixview<T> A, vectorview<int> ipiv)
 {
+    if (ipiv.size() != min_val) {
+        throw std::invalid_argument("ipiv size mismatch"); // for testing purposes, not possible to catch assertions
+    }
     assert(ipiv.size() == std::min(A.num_rows(), A.num_columns()));
 
     int m = A.num_rows();
@@ -137,6 +144,9 @@ template <typename T>
 void lu_v3(matrixview<T> A, vectorview<int> ipiv)
 {
     int min_val = std::min(A.num_rows(), A.num_columns());
+    if (ipiv.size() != min_val) {
+        throw std::invalid_argument("ipiv size mismatch"); // for testing purposes, not possible to catch assertions
+    }
     assert(ipiv.size() == min_val);
 
     int m = A.num_rows();
@@ -206,6 +216,9 @@ void lu_v4(matrixview<T> A, vectorview<int> ipiv)
     // same as v3 but use BLAS where possible
     static_assert(std::is_same_v<T,float> || std::is_same_v<T, double>, "lu_v4: type not supported for BLAS implementation");
     int min_val = std::min(A.num_rows(), A.num_columns());
+    if (ipiv.size() != min_val) {
+        throw std::invalid_argument("ipiv size mismatch"); // for testing purposes, not possible to catch assertions
+    }
     assert(ipiv.size() == min_val);
 
     int m = A.num_rows();
@@ -362,6 +375,10 @@ void lu_lapack(matrixview<T> A, vectorview<int> ipiv)
     int n = A.num_columns();
     int lda = A.ldim();
     int min_val = std::min(m, n);
+    if (ipiv.size() != min_val) {
+        throw std::invalid_argument("ipiv size mismatch"); // for testing purposes, not possible to catch assertions
+    }
+
     assert(ipiv.size() == min_val);
 
     int info;

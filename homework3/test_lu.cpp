@@ -197,7 +197,7 @@ bool test_wrong_size_handling(LU lu_func){
     } catch (const std::exception& e){
         error_thrown = true; // correctly threw error
     }
-    return error_thrown; // no error thrown
+    return error_thrown; // error thrown
 }
 
 bool zero_size_test(LU lu_func){
