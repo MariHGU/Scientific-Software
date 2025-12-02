@@ -154,7 +154,8 @@ void lu_v3(matrixview<T> A, vectorview<int> ipiv)
     int m = A.num_rows();
     int n = A.num_columns();
 
-    int nb = 128; // block size
+    //int nb = 128; // block size
+    int nb = 64;
     for (int i =0; i < min_val; i += nb){
         //find width:
         int bi = std::min(nb, min_val - i);
