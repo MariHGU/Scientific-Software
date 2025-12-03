@@ -28,6 +28,7 @@ void matvec1(vector<T> const& x, vector<T>& y){
 }
 
 //functor
+template<typename T>
 struct matvec2{
     //costructor 
     void operator()(vector<T> const& x, vector<T>& y){
