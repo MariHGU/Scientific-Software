@@ -40,6 +40,25 @@ struct matvec2{
     }
 };
 
+template<typename T>
+struct matvec3{
+    // want parameter m
+    T m;
+    
+    matvec3(T m_)
+    : m(m_)
+    {}
+
+    void operator()(vector<T> const& x, vector<T>& y) const{
+        assert(x.size() == y.size());
+
+        for(decltype(x.size()) i = 0; i<x.size(); ++i){
+            y[i]=x[i]/static_cast<T>(i+m);
+        }
+    }
+
+}
+
 int main()
 {
     int n = 100;
@@ -93,16 +112,16 @@ int main()
     matvec(x, sol);
 
     std::fill(xf_cop.begin(), xf_cop.end(), 0.f);
-    cg(matvec_float, xf_cop, bf_cop, 1.e-10, n);
-    matvec_float(xf_cop, solf_cop);
+    cg(matvec1, xf_cop, bf_cop, 1.e-10, n);
+    matvec1(xf_cop, solf_cop);
 
     std::fill(xf.begin(), xf.end(), 0.f);
     cg(matvec2_float, xf, bf, 1.e-10, n);
     matvec2_float(xf, solf);
 
-    std::cout << "orig error: " << norm(sol - b_ex) / norm(b_ex)
+    std::cout << "orig error: " << norm(sol_cop - b_ex_cop) / norm(b_ex_cop)
               << std::endl;
-    std::cout << "orig error: " << norm(solf - b_exf) / norm(b_exf)
+    std::cout << "orig error: " << norm(solf_cop - b_exf_cop) / norm(b_exf_cop)
               << std::endl;
 
     std::cout << "relative error: " << norm(sol - b_ex) / norm(b_ex)
