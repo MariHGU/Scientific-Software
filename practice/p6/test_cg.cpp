@@ -17,6 +17,15 @@ void matvec(vector<double> const& x, vector<double>& y)
     }
 }
 
+template<typename T>
+void matvec1(vector<T> const& x, vector<T>& y){
+    assert(x.size() == y.size());
+
+    for (decltype(x.size()) i = 0; i < x.size(); ++i) {
+        y[i] = x[i] / (i + 1);
+    }
+}
+
 int main()
 {
     int n = 100;
@@ -24,20 +33,33 @@ int main()
     vector<double> sol(n);
     vector<double> x(n);
     vector<double> b_ex(n);
+    vector<float> bf(n);
+    vector<float> solf(n);
+    vector<float> xf(n);
+    vector<float> b_exf(n);
 
     // x random between 0 and 1
     randomize(x);
+    randomize(xf);
 
     matvec(x, b);
+    matvec1(xf,bf);
 
     b_ex = b;
+    b_exf = bf;
 
     // x zero vector
     std::fill(x.begin(), x.end(), 0.);
     cg(matvec, x, b, 1.e-10, n);
     matvec(x, sol);
 
+    stf::fill(xf.begin(), xf.end(), 0.f);
+    cg(matvec1, xf, bf, 1.e-10, n);
+    matvec1(xf, solf);
+
     std::cout << "relative error: " << norm(sol - b_ex) / norm(b_ex)
+              << std::endl;
+    std::cout << "relative error: " << norm(solf - b_exf) / norm(b_exf)
               << std::endl;
 
     return 0;
