@@ -3,7 +3,7 @@ $(error MATRIXLIBRARY is not set, set it using export MATRIXLIBRARY=<path_to_tws
 endif
 
 CXX = g++
-CPPFLAGS = -O0 -Wall - Wextra -pedantic -std=c++20
+CPPFLAGS = -O0 -Wall -Wextra -pedantic -std=c++20
 
 HEADERS=cg.hpp
 

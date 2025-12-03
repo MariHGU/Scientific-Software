@@ -1,0 +1,233 @@
+\documentclass[a4paper]{article}
+\usepackage[a4paper, margin=3cm]{geometry}
+\usepackage{framed}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{pgfplots}
+
+\title{Homework Assignment 3: The LU factorization\\ \large Scientific Software / Technisch Wetenschappelijke Software}
+
+\newcommand{\answer}[1]{\vspace{-0.75em}\begin{framed} #1 \end{framed}\vspace{-0.75em}}
+
+\definecolor{ferngreen}{HTML}{56641a}
+\definecolor{perfumepurple}{HTML}{c0affb}
+\definecolor{apricotorange}{HTML}{e6a176}
+\definecolor{orientblue}{HTML}{00678a}
+\definecolor{winered}{HTML}{984464}
+\definecolor{downygreen}{HTML}{5eccab}
+
+
+\author{Mari Hove Gusdal} % Update with your name
+\date{}
+\begin{document}
+
+\maketitle
+
+\IfFileExists{./time_spent.txt}{}{\textcolor{red}{\textbf{Could not find a file named \texttt{time\_spent.txt} in this directory! Make sure to include such a file containing the number of hours you spent on this assignment as part of your submission! Then recompile this report in order to remove this warning.}}}
+
+\section*{Practical info}
+Machine name: \textbf{ Virton} % Update to match the machine you used to perform timings
+
+\paragraph{Other sources} Did you use any sources other than the course material? Cite them here. Did you use generative AI? If so, how did you use it?
+
+\answer{
+	I did use AI for some latex help(in regards to proper visualisations of the equations). And for some further explenation on the innerworkings of the LAPACK functions sgetrf and dgetrf.
+}
+
+
+\subsection*{Questions}
+% NOTE: you can use mmm to abbreviate matrix-matrix multiplication
+\begin{itemize}
+	\item[\textbf{Q1}:] What is the computational cost of the LU factorization?
+	\answer{
+
+	The computational cost of LU factorization is $flops = 2/3n^3 + O(n^2)$. The latter part coming from pivot-search, but will be dominated by the first part for large n.
+	}
+	\item[\textbf{F1}:] Plot the number of floating point operations per second in function of $N$ for \texttt{lu\_v1}, \texttt{lu\_v2}, \texttt{lu\_v3}, \texttt{lu\_v4}, and \texttt{lu\_lapack}. For the improvements `\texttt{lu\_v2}$\rightarrow$\texttt{lu\_v3}', `\texttt{lu\_v3}$\rightarrow$\texttt{lu\_v4}' and `\texttt{lu\_v4}$\rightarrow$\texttt{lu\_lapack}', explain in one or two sentences how the performance changes and why. Keep it surface-level. If you suspect any anomalies in the performance plot, discuss them as well.
+	\begin{figure}[!h]
+		\centering
+		\begin{tikzpicture}
+			\begin{semilogyaxis}[
+				xlabel=$n$,
+				xtick={90,300,600,1000,1600,2000},
+				ylabel=GFLOPS,
+				ytick={0.25,0.5,1,2,4,8,16,48,128},
+				yticklabels={0.25,0.5,1,2,4,8,16,48,128},
+				legend style={at={(0.5,-0.2)},anchor=north},
+				width=0.5\textwidth,
+				grid=both,
+                mark size=1.5pt,
+                cycle list={
+					{black, mark=none},
+                    {ferngreen,mark=square},
+                    {perfumepurple,mark=o},
+                    {apricotorange,mark=+},
+                    {orientblue,mark=triangle},
+                    {winered,mark=otimes},
+                    {downygreen,mark=*}
+                }, 
+			]
+
+			\addplot table [x=n, y expr={78.4}] {plotdata.txt};
+            \addlegendentry{Peak performance}
+
+			\addplot table [x=n, y=gflops] {plotdata.txt};
+			\addlegendentry{lu\_v1}
+
+			\addplot table [x=n, y=gflops] {plotdata2.txt};
+			\addlegendentry{lu\_v2}
+
+			\addplot table [x=n, y=gflops] {plotdata3.txt};
+			\addlegendentry{lu\_v3}
+
+			\addplot table [x=n, y=gflops] {plotdata4.txt};
+			\addlegendentry{lu\_v4}
+
+			\addplot table [x=n, y=gflops] {plotdata_lapack.txt};
+			\addlegendentry{lu\_lapack}
+
+			\end{semilogyaxis}
+		\end{tikzpicture}
+	\end{figure}		
+	\answer{
+		lu\_v2 $\rightarrow$ lu\_v3:
+		We introduce blocking, i.e.,\ factor the matrix in panels and update the trailing submatrix in block form, improving temporal locality. This lets us reuse data in L1/L2 cache while working on each block instead of repeatedly fetching it from RAM, so performance improves for sufficiently large matrices.
+
+		lu\_v3 $\rightarrow$ lu\_v4:
+		Introduced BLAS functions (GEMM and TRSM). These are highly optimized functions for matrix multiplication and triangle solve, including multi-level blocking, packing for a contiguous layout and also introduces multithreading possibilities, shifting the work into Level 3 BLAS kernels.
+
+		lu\_v4 $\rightarrow$ lu\_lapack:
+		Introduced LAPACK fortran routines: sgetrf\_ and dgetrf\_. These are LU specific routines that automatically allow for multithreaded BLAS, and spec-optimized methods. Main performance boost comes form no longer relying on lu\_v2 for panel factorization, but instead using LAPACKs highly tuned methods with block-size chosen based on the machine's architecture.
+
+		Mark:
+		The main benefit of blocking in lu\_v3 and lu\_v4 methods can be seen after $n \geq$ block\_size (in my case: 128). Before this, lu\_v2 will do the majority of the work, showing little difference between these methods for smaller matrices. Larger matrices have flops handled by level 3 BLAS operations, shifting LU factorisation from memory-bound (waiting for RAM) to compute-bound (doing FLOPS).
+
+		I included a line showing the peak performance of my machine (78.4 Gflops), but as can be seen: lu\_lapack outperforms this. The peak performance is the single-core performance, however LAPACK methods allow for parallelization, meaning multi-threading of computations of sub parts of the matrices. The results in the graph were all executed with \texttt{OMP\_NUM\_THREADS=4}.
+	}
+	\item[\textbf{Q2}:] What change did you make to \texttt{lu\_v1} to make it more efficient? Why does this change improve the performance?
+	\answer{
+	To improve the performance of \texttt{lu\_v1}, I swapped the order of the \texttt{i} and \texttt{k} loops. 
+	Since the matrices in \texttt{twsmatrix} are stored in column-major format, elements within a 
+	column lie next to each other in memory. Accessing memory in this order is much more efficient, 
+	because values that are adjacent in memory are likely to be loaded into the same cache line.
+
+	In the original version, the algorithm iterated over rows first, which meant jumping across memory 
+	with a large stride. This causes poor spatial locality: the CPU repeatedly reloads cache lines, and 
+	useful data is evicted before it can be reused. By iterating over columns first, the updated version 
+	accesses memory contiguously, improving cache utilisation and reducing cache misses. This comes from improved spatial locality, reducing TLB misses.
+
+	Contiguous access patterns also enable better vectorisation. The compiler or hardware can apply 
+	SIMD instructions only when data lies sequentially in memory. This allows more floating-point 
+	operations per cycle and therefore higher performance. Contiguous access also allows for prefetching, letting the CPU load predicted data into the cache early. 
+
+	In total the improvements are visible in the plot. Lu\_v1 peaks at \texttt{n=120}, before falling for every larger n due to poor memory locality. Meanwhile lu\_v2 peaks for \texttt{n=768}, showcasing the reduced cache and TLB preassure, but still a limit in memory bandwidth.
+	}
+	\item[\textbf{Q3}:] Write down the formulas you derived for the blocked backpropagation to solve triangular systems of equations.
+	\answer{
+\begin{equation}
+    \begin{aligned}
+        &\text{Given: } L \times X = B => X = L^{-1} \times B \\
+        &\text{we solve the system:} \\
+        &\begin{bmatrix}
+            L_{00}X_{00} \\
+            L_{10}X_{00} + L_{11}X_{10}
+        \end{bmatrix} =
+        \begin{bmatrix}
+            B_{00} \\ B_{10}
+        \end{bmatrix}.
+    \end{aligned}
+\end{equation}
+
+From this, we derive:
+\begin{equation}
+    \begin{aligned}
+        X_{00} &= L_{00}^{-1}B_{00}, \\
+        L_{11}X_{10} &= B_{10} - L_{10}L_{00}^{-1}B_{00}, \\
+        X_{10} &= L_{11}^{-1}B_{10} - L_{11}^{-1}L_{10}L_{00}^{-1}B_{00}.
+    \end{aligned}
+\end{equation}
+Resulting in:
+\begin{equation}
+	\begin{bmatrix}
+		X_{00} \\X_{10}
+	\end{bmatrix} =
+	\begin{bmatrix}
+		L_{00}^{-1}B_{00} \\
+		L_{11}^{-1}B_{10} - L_{11}^{-1}L_{10}L_{00}^{-1}B_{00}
+	\end{bmatrix}
+\end{equation}
+
+Generalizing, the solution for each component is:
+\begin{equation}
+    x_i = L_{ii}^{-1} \left(b_i - \sum_{k=0}^{i-1}L_{ik}x_k\right).
+\end{equation}
+	}
+	\item[\textbf{Q4}:] If $n = 512$ and $n_b = 64$, then approximately 10\% of the floating point operations in the blocked LU factorization is spent on the LU factorization of the small blocks. What percentage of the runtime of \texttt{lu\_v4} is spent of the small blocks if those parameters are used? Explain.
+	\answer{
+		The remaining $90\%$ of the floating point operations are performed by 
+		Level--3 BLAS routines (\texttt{trsm}/\texttt{gemm}), which run at a
+		significantly higher GFLOP/s rate than the unblocked LU in the small panels.
+
+		\begin{equation}
+			Symbols: F = number of flops, R = flop rate [gflop/s], t = time [s].
+		\end{equation}
+
+		\[
+		t_s = \frac{F_s}{R_s}, \qquad 
+		t_\ell = \frac{F_\ell}{R_\ell},
+		\]
+
+		so the fraction of the total runtime spent in the small blocks is
+
+		\[
+		\text{fraction}
+		= 
+		\frac{t_s}{t_s + t_\ell}
+		=
+		\frac{F_s / R_s}{F_s / R_s + F_\ell / R_\ell}.
+		\]
+
+		Since $F_s = 0.1 F$ and $F_\ell = 0.9 F$, and assuming 
+		$R_\ell \approx 6 R_s$ (a conservative estimate for BLAS--3 vs.\ unblocked LU),
+
+		\[
+		\text{fraction}
+		=
+		\frac{0.1}{\,0.1 + 0.9/6\,}
+		\approx 0.40.
+		\]
+
+		Despite the small blocks only taking up about 10\% of the FLOPS, their much lower FLOP rate compared to BLAS means they will take up easily atleast 40\% of the runtime. Making the choice of blocksize crucial for good performance.
+	}
+	\item[\textbf{Q5}:] Describe your testing methodology. What did you test and why?
+	\answer{
+		I first wanted to test that my implementations actually returned the correct output, as this is the essential part of the functions. For this I made the assumption that the already implemented naive methods from the course team, is correct. From this correct matrix, I then checked the result of each of the lu-functions against the result of \texttt{lu\_v1}. Returning false if the matrix was different, or true for the same result.
+
+		I made a helper function to calculate the residual of the LU factorization, to see how close the reconstructed matrix is to the original matrix. This was done by calculating $R = PA0 - LU$, and then calculating the norm of $R$ divided by the norm of $A0$. If this value was below a certain threshold (depending on float or double matrix), I considered the test to be passed. This was to check that the LU factorisation, actually computes back into the original matrix.
+
+		I also wanted to test the secureness of my implementation. Checking if my implementation handles incorrect sized matrices, double vs ints vs floats. In addition, I also wanted to test how it handles non-square matrices. And again check if these resulted in the same output for each method.
+
+		Finally I checked if the functions could handle zero-sized matrices.
+
+		Under the assumption that all of my tests were implemented correctly, every function passed every test.
+
+		Now I did have to make 2 small changes in order to get them all to pass.
+
+		The first was to add a \texttt{if (!ipiv.size() == min\_val)\{throw new exception\}}, despite including an assertion below this. This was to be able to catch the error, as assertions automatically throw \texttt{std::abort()}, and are not catch-able. For performance, I would remove this part, and keep only the assertion. However to be able to run every function without stop, I had to include it.
+
+		The 2nd change I made was to add a \texttt{if (m==0 || n==0) return;} to \texttt{lu\_lapack}. This is due to \texttt{dgetrf} and \texttt{sgetrf} not being able to handle a \texttt{lda} of 0.
+	}
+	\item[\textbf{Q6}:] What changes did you make to support \texttt{float} matrices?
+	\answer{
+		In order to support both float matricies and double matricies, i included a check for wether the Type T was of type float or double. For lu\_v4: If double i mapped the matrix multiplication to cblas\_dgemm and triangular solve cblas\_dtrsm. Or if float i mapped the MM to cblas\_sgemm and triangular solve to cblas\_strsm. 
+		For lu\_lapack: If float I mapped to the function sgetrf\_, or if double i mapped to the function dgetrf\_.
+
+		These functions have been specifically optimized to handle double and float matricies respectively, and will therefore give the best performance as possible regardless of T type.
+
+		I additionally made a small change in my tests to handle both float and double matricies. Floats have a lower precision degree than doubles, and i could therefore not use the same tolarance for error in my computation of lu\_residual. Floats have atmost 1e-7 rounding errors, meanwhile doubles have 1e-15. Therefore i mapped the tolarance to 1e-5 if floats, and 1e-12 for doubles.
+	}
+\end{itemize}
+\end{document}
