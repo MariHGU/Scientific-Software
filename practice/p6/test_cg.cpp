@@ -56,8 +56,7 @@ struct matvec3{
             y[i]=x[i]/static_cast<T>(i+m);
         }
     }
-
-}
+};
 
 int main()
 {
@@ -112,8 +111,8 @@ int main()
     matvec(x, sol);
 
     std::fill(xf_cop.begin(), xf_cop.end(), 0.f);
-    cg(matvec1, xf_cop, bf_cop, 1.e-10, n);
-    matvec1(xf_cop, solf_cop);
+    cg(matvec_float, xf_cop, bf_cop, 1.e-10, n);
+    matvec_float(xf_cop, solf_cop);
 
     std::fill(xf.begin(), xf.end(), 0.f);
     cg(matvec2_float, xf, bf, 1.e-10, n);
