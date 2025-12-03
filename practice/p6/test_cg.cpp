@@ -74,11 +74,11 @@ int main()
     // x zero vector
     std::fill(x.begin(), x.end(), 0.);
     cg(matvec2_double, x, b, 1.e-10, n);
-    matvec(x, sol);
+    matvec2_double(x, sol);
 
     std::fill(xf.begin(), xf.end(), 0.f);
     cg(matvec2_float, xf, bf, 1.e-10, n);
-    matvec1(xf, solf);
+    matvec2_float(xf, solf);
 
     std::cout << "relative error: " << norm(sol - b_ex) / norm(b_ex)
               << std::endl;
