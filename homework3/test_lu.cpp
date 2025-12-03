@@ -144,11 +144,6 @@ bool lu_residual(const matrix<T>& A_orig, matrix<T>& A_lu, vector<int>& ipiv){
     return norm_R / norm_PA < tol;
 }    
 
-// implement further tests??
-// test non-square
-// test wrong 
-// check if reconstructed A is close to original A
-// zero-size cases
 using LU = std::function<void(matrixview<double>, vectorview<int>)>;
 using FLU = std::function<void(matrixview<float>, vectorview<int>)>;
 

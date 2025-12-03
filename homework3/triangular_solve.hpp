@@ -45,8 +45,7 @@ void trsm_ll_v2(const matrixview<T> L, matrixview<T> B)
     // TODO: implement this function
     int n = L.num_rows();
     int m = B.num_columns();
-    int nb = 64; // test various block sizes, for partition into diagonal blocks to solve
-    // make sure blocks are multiple of kernel sizes
+    int nb = 64;
     // want to max block size to fit within L1 cache, L2 cache and L3 cache
 
     // iterate through blocks
@@ -54,7 +53,6 @@ void trsm_ll_v2(const matrixview<T> L, matrixview<T> B)
         int bk = std::min(nb, n-k); // find the index of first item in block
 
         // Find diagonal blocks
-        //.submatrix(i1,i2,j1,j2)
         auto Lkk = L.submatrix(k, bk, k, bk); // square (bi-i x bi-i matrix)
         auto Bk = B.submatrix(k, bk, 0, m); // (bk-i x m matrix)
 
@@ -64,7 +62,7 @@ void trsm_ll_v2(const matrixview<T> L, matrixview<T> B)
         int i_next = bk + k; // index of start of next block
         if (i_next < n){
             auto Lik = L.submatrix(i_next, n-i_next, k, bk); // (n-2i_inext x bk-k matrix)
-            auto Bi = B.submatrix(i_next, n-i_next, 0, m); // 
+            auto Bi = B.submatrix(i_next, n-i_next, 0, m); 
 
             // Bi = Bi - Lik*Xk
             matmul_blocked_a(Lik, Bk, Bi, T(-1), T(0)); // -> stores solution in Bi

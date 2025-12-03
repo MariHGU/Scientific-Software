@@ -94,7 +94,7 @@ int main(int argc, char* argv[]){
             num = 40;
         }
         else {
-            num = 30;
+            num = 20;
         }
         
         double diff = 0.0;

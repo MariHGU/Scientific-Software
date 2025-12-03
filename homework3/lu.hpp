@@ -413,7 +413,6 @@ void lu_lapack(matrixview<T> A, vectorview<int> ipiv)
         throw std::runtime_error("lu_lapack: argument " + std::to_string(-info) + " had an illegal value.");
     }
     if (info > 0) {
-        // matrix is singular, U(info,info) = 0
         // LU is still produced, but rank deficient => rank = 0
     } 
     
