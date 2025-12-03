@@ -39,7 +39,7 @@ int main()
     vector<float> b_exf(n);
 
     // wrap in lambda
-    auto matvec_float = [](vector<float> const& x, vector<float> const& y){matvec1(x, y);}
+    auto matvec_float = [](vector<float> const& x, vector<float>& y){matvec1(x, y);};
 
     // x random between 0 and 1
     randomize(x);
