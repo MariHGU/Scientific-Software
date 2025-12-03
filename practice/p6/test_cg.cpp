@@ -38,6 +38,9 @@ int main()
     vector<float> xf(n);
     vector<float> b_exf(n);
 
+    // wrap in lambda
+    auto matvec_float = [](vector<float> const& x, vector<float> const& y){matvec1(x, y);}
+
     // x random between 0 and 1
     randomize(x);
     randomize(xf);
@@ -54,7 +57,7 @@ int main()
     matvec(x, sol);
 
     std::fill(xf.begin(), xf.end(), 0.f);
-    cg(matvec1, xf, bf, 1.e-10, n);
+    cg(matvec_float, xf, bf, 1.e-10, n);
     matvec1(xf, solf);
 
     std::cout << "relative error: " << norm(sol - b_ex) / norm(b_ex)
