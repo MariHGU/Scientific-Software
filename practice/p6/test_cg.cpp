@@ -53,7 +53,7 @@ int main()
     cg(matvec, x, b, 1.e-10, n);
     matvec(x, sol);
 
-    stf::fill(xf.begin(), xf.end(), 0.f);
+    std::fill(xf.begin(), xf.end(), 0.f);
     cg(matvec1, xf, bf, 1.e-10, n);
     matvec1(xf, solf);
 
