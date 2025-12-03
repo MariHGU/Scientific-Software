@@ -34,7 +34,7 @@ struct matvec2{
     void operator()(vector<T> const& x, vector<T>& y){
         assert(x.size() == y.size());
 
-        for(decltype(x.size())) i = 0; i<x.size(); ++i{
+        for(decltype(x.size()) i = 0; i<x.size(); ++i){
             y[i]=x[i]/static_cast<T>(i+1);
         }
     }
