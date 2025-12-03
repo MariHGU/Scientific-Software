@@ -86,13 +86,15 @@ int main()
     vector<float>xf_cop = xf;
 
     // Functor instances:
-    matvec2<double> matvec2_double;
-    matvec2<float> matvec2_float;
+    // matvec2<double> matvec2_double;
+    // matvec2<float> matvec2_float;
+
+    matvec3<double> matvec3(3.);
 
     matvec(x_cop, b_cop);
     matvec1(xf_cop,bf_cop);
-    matvec2_double(x,b);
-    matvec2_float(xf, bf);
+    // matvec2_double(x,b);
+    // matvec2_float(xf, bf);
 
 
     b_ex = b;
@@ -103,8 +105,8 @@ int main()
 
     // x zero vector
     std::fill(x.begin(), x.end(), 0.);
-    cg(matvec2_double, x, b, 1.e-10, n);
-    matvec2_double(x, sol);
+    cg(matvec3, x, b, 1.e-10, n);
+    matvec3(x, sol);
 
     std::fill(x_cop.begin(), x_cop.end(), 0.);
     cg(matvec, x_cop, b_cop, 1.e-10, n);
@@ -114,9 +116,9 @@ int main()
     cg(matvec_float, xf_cop, bf_cop, 1.e-10, n);
     matvec_float(xf_cop, solf_cop);
 
-    std::fill(xf.begin(), xf.end(), 0.f);
-    cg(matvec2_float, xf, bf, 1.e-10, n);
-    matvec2_float(xf, solf);
+    // std::fill(xf.begin(), xf.end(), 0.f);
+    // cg(matvec2_float, xf, bf, 1.e-10, n);
+    // matvec2_float(xf, solf);
 
     std::cout << "orig error: " << norm(sol_cop - b_ex_cop) / norm(b_ex_cop)
               << std::endl;
@@ -125,8 +127,8 @@ int main()
 
     std::cout << "relative error: " << norm(sol - b_ex) / norm(b_ex)
               << std::endl;
-    std::cout << "relative error: " << norm(solf - b_exf) / norm(b_exf)
-              << std::endl;
+    // std::cout << "relative error: " << norm(solf - b_exf) / norm(b_exf)
+    //           << std::endl;
 
     return 0;
 }
