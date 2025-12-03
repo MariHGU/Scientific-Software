@@ -100,9 +100,9 @@ int main()
     cg(matvec2_float, xf, bf, 1.e-10, n);
     matvec2_float(xf, solf);
 
-    std::cout << "orig error: " << norm(sol_cop - b_ex_cop) / norm(b_ex_cop)
+    std::cout << "orig error: " << norm(sol - b_ex) / norm(b_ex)
               << std::endl;
-    std::cout << "orig error: " << norm(solf_cop - b_exf_cop) / norm(b_exf_cop)
+    std::cout << "orig error: " << norm(solf - b_exf) / norm(b_exf)
               << std::endl;
 
     std::cout << "relative error: " << norm(sol - b_ex) / norm(b_ex)
