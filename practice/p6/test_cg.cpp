@@ -89,7 +89,7 @@ int main()
     // matvec2<double> matvec2_double;
     // matvec2<float> matvec2_float;
 
-    matvec3<double> matvec3(3.);
+    matvec3<double> mv3(3.);
 
     matvec(x_cop, b_cop);
     matvec1(xf_cop,bf_cop);
@@ -105,8 +105,8 @@ int main()
 
     // x zero vector
     std::fill(x.begin(), x.end(), 0.);
-    cg(matvec3, x, b, 1.e-10, n);
-    matvec3(x, sol);
+    cg(mv3, x, b, 1.e-10, n);
+    mv3(x, sol);
 
     std::fill(x_cop.begin(), x_cop.end(), 0.);
     cg(matvec, x_cop, b_cop, 1.e-10, n);
