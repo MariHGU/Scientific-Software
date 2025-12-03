@@ -93,7 +93,7 @@ int main()
 
     matvec(x_cop, b_cop);
     matvec1(xf_cop,bf_cop);
-    matvec3(x,b);
+    mv3(x,b);
     // matvec2_double(x,b);
     // matvec2_float(xf, bf);
 
