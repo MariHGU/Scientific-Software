@@ -37,8 +37,7 @@ struct matvec2{
             y[i]=x[i]/static_cast<T>(i+1);
         }
     }
-    
-}
+};
 
 int main()
 {
