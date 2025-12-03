@@ -31,7 +31,7 @@ void matvec1(vector<T> const& x, vector<T>& y){
 template<typename T>
 struct matvec2{
     //costructor 
-    void operator()(vector<T> const& x, vector<T>& y){
+    void operator()(vector<T> const& x, vector<T>& y) const{
         assert(x.size() == y.size());
 
         for(decltype(x.size()) i = 0; i<x.size(); ++i){
