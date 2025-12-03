@@ -53,7 +53,7 @@ int main()
     vector<float> bf(n);
     vector<float> bf_cop = bf;
     vector<float> solf(n);
-    vector<float> solf_cop;
+    vector<float> solf_cop = solf;
     vector<float> xf(n);
     vector<float> b_exf(n);
     vector<float> b_exf_cop = b_exf;
