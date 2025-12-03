@@ -108,7 +108,7 @@ int main()
 
     std::fill(x_cop.begin(), x_cop.end(), 0.);
     cg(matvec, x_cop, b_cop, 1.e-10, n);
-    matvec(x, sol);
+    matvec(x_cop, sol_cop);
 
     std::fill(xf_cop.begin(), xf_cop.end(), 0.f);
     cg(matvec_float, xf_cop, bf_cop, 1.e-10, n);
