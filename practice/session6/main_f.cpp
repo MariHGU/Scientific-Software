@@ -6,8 +6,10 @@
 using namespace tws;
 
 int main(){
-    vector<double> A(3);
-    vector<double> B(3);
+    int n = 3;
+
+    vector<double> A(n);
+    vector<double> B(n);
 
     randomize(A);
     randomize(B);
@@ -15,7 +17,7 @@ int main(){
     print_vector(A);
     print_vector(B);
 
-    fortran_add_(3, A.data(), B.data());
+    fortran_add_(&n, A.data(), B.data());
 
     print_vector(B);
 
