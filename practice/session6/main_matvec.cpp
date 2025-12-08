@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include "fortran_matvec.h"
+#include "twsmatrix.hpp"
 
 using namespace tws;
 
