@@ -17,7 +17,7 @@ int main(){
 
     c_add(3, A.data(), B.data());
 
-    print_vector(A);
+    print_vector(B);
 
     return 0;
 
