@@ -28,7 +28,7 @@ main_matvec.o: main_matvec.cpp fortran_matvec.h
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
 main_matvec: main_matvec.o fortran_matvec.o
-	$(CXX) -o $@ $^-lgfortran
+	$(CXX) -o $@ $^ -lgfortran
 
 clean:
 	rm -f main main_f main_matvec *.o
