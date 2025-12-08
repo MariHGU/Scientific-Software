@@ -12,7 +12,12 @@ int main(){
     randomize(A);
     randomize(B);
 
+    print_vector(A);
+    print_vector(B);
+
     c_add(3, A.data(), B.data());
+
+    print_vector(A);
 
     return 0;
 
