@@ -15,7 +15,7 @@ int main(){
     print_vector(A);
     print_vector(B);
 
-    c_add(3, A.data(), B.data());
+    fortran_add_(3, A.data(), B.data());
 
     print_vector(B);
 
