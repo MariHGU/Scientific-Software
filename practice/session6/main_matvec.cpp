@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cassert>
 #include "fortran_matvec.h"
 
 using namespace tws;
@@ -20,6 +21,10 @@ int main(){
     matrix<double> M(m, n);
     vector<double> x(n);
     vector<double> y(m);
+
+    randomize(M);
+    randomize(x);
+    randomize(y);
 
     matvec_fortran(m, n, M, x, y);
 
