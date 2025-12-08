@@ -58,6 +58,23 @@ struct matvec3{
     }
 };
 
+template<typename T> // include const if operation is expected to be const
+struct matvec4{
+    void operator()(vector<T> const& x, vector<T>& y, T m) const{
+        assert(x.size() == y.size());
+
+        for(decltype(x.size()) i = 0; i<x.size(); ++i){
+            y[i]=x[i]/static_cast<T>(i+m);
+        }
+    }
+};
+
+// could map a matvec4(x, y, m) as:
+// functor instances:
+// matvec4<double> mv4;
+// auto op4 = [m](vector<T> const& x, vector<T>& y){ mv4(x, y, m);}
+// auto op4_generic = [m](auto const& x, auto& y){matvec4(x, y, m);}
+
 int main()
 {
     int n = 100;

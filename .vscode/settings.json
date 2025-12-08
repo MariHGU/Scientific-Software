@@ -67,6 +67,8 @@
         "utility": "cpp",
         "variant": "cpp",
         "vector": "cpp",
-        "complex": "cpp"
+        "complex": "cpp",
+        "random": "cpp",
+        "cassert": "cpp"
     }
 }
