@@ -9,6 +9,9 @@ c_add.o: c_add.c $(HEADERS)
 fortran_add.o: fortran_add.f90 fortran_add.h
 	gfortran -o $@ -c $<
 
+fortran_matvec.o: fortran_matvec.f90 fortran_matvec.h
+	gfortran -o $@ -c $<
+
 main.o: main.cpp $(HEADERS)
 	$(CXX) $(CXXFLAGS) -o $@ -c $< 
 
@@ -21,5 +24,11 @@ main_f.o: main_f.cpp fortran_add.h
 main_f: main_f.o fortran_add.o
 	$(CXX) -o $@ $^ -lgfortran
 
+main_matvec.o: main_matvec.cpp fortran_matvec.h
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+main_matvec: main_matvec.o fortran_matvec.o
+	$(CXX) -o $@ $^-lgfortran
+
 clean:
-	rm -f main main_f *.o
+	rm -f main main_f main_matvec *.o
