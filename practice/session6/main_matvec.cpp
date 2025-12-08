@@ -25,9 +25,13 @@ int main(){
 
     randomize(M);
     randomize(x);
-    randomize(y);
+
+    print_matrix(M);
+    print_vector(x);
 
     matvec_fortran(m, n, M, x, y);
+
+    print_vector(y);
 
     return 0;
 }
