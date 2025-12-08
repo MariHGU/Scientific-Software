@@ -3,11 +3,11 @@ CXXFLAGS=-O0 -std=c++20 -Wall -Wextra
 
 HEADERS=c_add.h
 
-c_add: c_add.c $(HEADERS)
+c_add.o: c_add.c $(HEADERS)
 	gcc -c $< -o $@
 
 main.o: main.cpp $(HEADERS)
-	$(CXX) $(CPPFLAGS) -o $@ -c $< -I"$(MATRIXLIBRARY)"
+	$(CXX) $(CXXFLAGS) -o $@ -c $< -I"$(MATRIXLIBRARY)"
 
 main: main.o c_add.o
 	$(CXX) -o $@ $^
