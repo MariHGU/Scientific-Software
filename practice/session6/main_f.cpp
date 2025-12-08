@@ -5,6 +5,12 @@
 
 using namespace tws;
 
+void vector_assert(const int& n, const vector<double>& a, vector<double>& b){
+    assert(a.size() == b.size());
+
+    fortran_add_(&n, a.data(), b.data());
+}
+
 int main(){
     int n = 3;
 
@@ -13,14 +19,13 @@ int main(){
 
     randomize(A);
     randomize(B);
-
+    
     print_vector(A);
     print_vector(B);
 
-    fortran_add_(&n, A.data(), B.data());
+    vector_assert(n, A, B);
 
     print_vector(B);
 
     return 0;
-
 }
