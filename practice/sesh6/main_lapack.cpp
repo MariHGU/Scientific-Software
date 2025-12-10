@@ -23,7 +23,12 @@ int main(){
 
     randomize(x);
 
+    print_vector(x);
+    print_vector(y);
+
     call_daxpy(x, y, alpha);
+
+    print_vector(y);
 
     return 0;
 }
