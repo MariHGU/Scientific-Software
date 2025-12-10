@@ -9,8 +9,9 @@ void call_daxpy(vector<double>& a, vector<double>& b, double& alpha){
     assert(a.size() == b.size());
 
     int n = a.size();
+    int stride = 1;
 
-    daxpy_(&n, &alpha, a.data(), 1, b.data(), 1);
+    daxpy_(&n, &alpha, a.data(), &stride, b.data(), &stride);
 }
 
 int main(){
