@@ -44,4 +44,6 @@ int main(){
     call_fortran_matvec(m, n, M, a, b);
 
     print_vector(b);
+
+    return 0;
 }
