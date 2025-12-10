@@ -22,6 +22,7 @@ int main(){
     vector<double> y(n);
 
     randomize(x);
+    randomize(y);
 
     print_vector(x);
     print_vector(y);
