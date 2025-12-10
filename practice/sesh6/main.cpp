@@ -13,7 +13,7 @@ void call_fortran(const int& n, const vector<double>& x, vector<double>& y){
     fortran_add_(&n, x.data(), y.data());
 }
 
-void call_fortran_matvec(const int& m, const int& n, const matrix<double>& A, const vector<double>& x, vector<double> y){
+void call_fortran_matvec(const int& m, const int& n, const matrix<double>& A, const vector<double>& x, vector<double>& y){
     assert(m == A.num_rows());
     assert(n == A.num_columns());
     assert(x.size() == n);
