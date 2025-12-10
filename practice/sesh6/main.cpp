@@ -32,7 +32,7 @@ int main(){
     vector<double> a(n);
     vector<double> b(m);
 
-    a[0] = 1, a[1] = 2, a[2] = 3; 
+    a[0] = 1, a[1] = 2, a[2] = 3, a[3] = 1; 
     randomize(M);
 
     print_vector(a);
