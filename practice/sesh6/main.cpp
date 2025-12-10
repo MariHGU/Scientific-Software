@@ -21,7 +21,7 @@ void call_fortran_matvec(const int& m, const int& n, const matrix<double>& A, co
 
     int lda = A.ldim()
 
-    fortran_matvec_(&m, &n, A.data(), lda&, x.data(), y.data());
+    fortran_matvec_(&m, &n, A.data(), &lda, x.data(), y.data());
 }
 
 int main(){
