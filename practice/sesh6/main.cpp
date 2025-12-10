@@ -18,6 +18,9 @@ int main(){
     vector<double> a(n);
     vector<double> b(n);
 
+    randomize(a);
+    randomize(b);
+
     print_vector(a);
     print_vector(b);
 
