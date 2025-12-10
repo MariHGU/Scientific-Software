@@ -19,7 +19,9 @@ void call_fortran_matvec(const int& m, const int& n, const matrix<double>& A, co
     assert(x.size() == n);
     assert(y.size() == m);
 
-    fortran_matvec_(&m, &n, A.data(), A.ldim(), x.data(), y.data());
+    int lda = A.ldim()
+
+    fortran_matvec_(&m, &n, A.data(), lda&, x.data(), y.data());
 }
 
 int main(){
